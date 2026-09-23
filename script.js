@@ -71,9 +71,23 @@ let imgScale = 1;
 let imgPosX = 0;
 let imgPosY = 0;
 
-// コンテナの実サイズ・論理サイズを動的に取得するヘルパー
+// 論理キャンバスサイズ(描画座標空間)を返すヘルパー。
+//
+// 以前は container.clientWidth(実際のCSS表示幅)をそのまま使っていたが、
+// これはPC/スマホでコンテナの表示幅が異なると描画の座標空間自体が
+// 変わってしまい、フォントサイズやpadding・gapなど「px絶対値」で
+// 指定している要素の見た目の比率がデバイスごとにズレる原因になっていた。
+// (boxLeftRatio等のクロップ枠比率はそもそも幅600を基準に設計されている)
+//
+// 論理サイズは常に固定値(BASE_WIDTH)にし、画面上の実際の表示サイズは
+// CSS側(mainCanvas.style.width/height = 100%)でスケーリングする。
+// マウス/タッチ座標は各イベントハンドラ内で
+// containerW / rect.width の比率変換を通しているため、
+// 論理サイズを固定してもポインタ操作の整合性は保たれる。
+const BASE_WIDTH = 600;
+
 function getContainerSize() {
-    const width = container.clientWidth || 600;
+    const width = BASE_WIDTH;
     const isLandscape = container.classList.contains('landscape');
     const height = isLandscape ? width * (1000 / 1593) : width * (1593 / 1000);
     return { width, height };
@@ -1065,10 +1079,15 @@ function doScreenRender() {
 
 function generateExportDataUrl() {
     const { width: containerW, height: containerH } = getContainerSize();
-    const exportScale = 2;
+    const isLandscape = container.classList.contains('landscape');
+    // 書き出しは常に 1000x1593 (縦) or 1593x1000 (横) ちょうどにする。
+    // containerW/containerH は BASE_WIDTH を基準にした同じ比率なので、
+    // 目標の幅からスケール係数を逆算すれば高さもぴったり一致する。
+    const targetWidth = isLandscape ? 1593 : 1000;
+    const exportScale = targetWidth / containerW;
     const canvas = document.createElement('canvas');
-    canvas.width = containerW * exportScale;
-    canvas.height = containerH * exportScale;
+    canvas.width = Math.round(containerW * exportScale);
+    canvas.height = Math.round(containerH * exportScale);
     const ctx = canvas.getContext('2d');
     ctx.setTransform(exportScale, 0, 0, exportScale, 0, 0);
     render(ctx, containerW, containerH);
