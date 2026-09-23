@@ -176,6 +176,141 @@ function buildFrostedTile() {
 buildFrostedTile();
 
 // ------------------------------------------------------------
+// iOS Safari 対策: ctx.filter (blur+saturate等の複合指定) は
+// iOS Safari で反応しないことがあるため、ピクセル処理で自前実装する。
+// ------------------------------------------------------------
+
+// 彩度・コントラストを行列演算で適用 (CSS filter: saturate() contrast() 相当)
+function applySaturationContrast(imageData, saturation, contrast) {
+    const data = imageData.data;
+    const lumR = 0.3086, lumG = 0.6094, lumB = 0.0820;
+    const s = saturation;
+
+    const m00 = (1 - s) * lumR + s, m01 = (1 - s) * lumG, m02 = (1 - s) * lumB;
+    const m10 = (1 - s) * lumR, m11 = (1 - s) * lumG + s, m12 = (1 - s) * lumB;
+    const m20 = (1 - s) * lumR, m21 = (1 - s) * lumG, m22 = (1 - s) * lumB + s;
+
+    // contrast: (v - 128) * contrast + 128
+    const cOffset = 128 * (1 - contrast);
+
+    for (let i = 0; i < data.length; i += 4) {
+        const r = data[i], g = data[i + 1], b = data[i + 2];
+        let nr = r * m00 + g * m01 + b * m02;
+        let ng = r * m10 + g * m11 + b * m12;
+        let nb = r * m20 + g * m21 + b * m22;
+
+        data[i]     = nr * contrast + cOffset;
+        data[i + 1] = ng * contrast + cOffset;
+        data[i + 2] = nb * contrast + cOffset;
+    }
+    return imageData;
+}
+
+// 高速ボックスブラー(複数回重ねてガウスブラーに近似)
+function boxBlur(imageData, radius) {
+    if (radius < 1) return imageData;
+    const { data, width, height } = imageData;
+    const passes = 3;
+    for (let p = 0; p < passes; p++) {
+        boxBlurHorizontal(data, width, height, radius);
+        boxBlurVertical(data, width, height, radius);
+    }
+    return imageData;
+}
+
+function boxBlurHorizontal(data, width, height, radius) {
+    const temp = new Uint8ClampedArray(data.length);
+    const size = radius * 2 + 1;
+
+    for (let y = 0; y < height; y++) {
+        let rSum = 0, gSum = 0, bSum = 0, aSum = 0;
+        const rowStart = y * width * 4;
+
+        for (let i = -radius; i <= radius; i++) {
+            const x = Math.min(width - 1, Math.max(0, i));
+            const idx = rowStart + x * 4;
+            rSum += data[idx]; gSum += data[idx + 1];
+            bSum += data[idx + 2]; aSum += data[idx + 3];
+        }
+
+        for (let x = 0; x < width; x++) {
+            const idx = rowStart + x * 4;
+            temp[idx] = rSum / size;
+            temp[idx + 1] = gSum / size;
+            temp[idx + 2] = bSum / size;
+            temp[idx + 3] = aSum / size;
+
+            const addX = Math.min(width - 1, x + radius + 1);
+            const subX = Math.max(0, x - radius);
+            const addIdx = rowStart + addX * 4;
+            const subIdx = rowStart + subX * 4;
+
+            rSum += data[addIdx] - data[subIdx];
+            gSum += data[addIdx + 1] - data[subIdx + 1];
+            bSum += data[addIdx + 2] - data[subIdx + 2];
+            aSum += data[addIdx + 3] - data[subIdx + 3];
+        }
+    }
+    data.set(temp);
+}
+
+function boxBlurVertical(data, width, height, radius) {
+    const temp = new Uint8ClampedArray(data.length);
+    const size = radius * 2 + 1;
+
+    for (let x = 0; x < width; x++) {
+        let rSum = 0, gSum = 0, bSum = 0, aSum = 0;
+
+        for (let i = -radius; i <= radius; i++) {
+            const y = Math.min(height - 1, Math.max(0, i));
+            const idx = (y * width + x) * 4;
+            rSum += data[idx]; gSum += data[idx + 1];
+            bSum += data[idx + 2]; aSum += data[idx + 3];
+        }
+
+        for (let y = 0; y < height; y++) {
+            const idx = (y * width + x) * 4;
+            temp[idx] = rSum / size;
+            temp[idx + 1] = gSum / size;
+            temp[idx + 2] = bSum / size;
+            temp[idx + 3] = aSum / size;
+
+            const addY = Math.min(height - 1, y + radius + 1);
+            const subY = Math.max(0, y - radius);
+            const addIdx = (addY * width + x) * 4;
+            const subIdx = (subY * width + x) * 4;
+
+            rSum += data[addIdx] - data[subIdx];
+            gSum += data[addIdx + 1] - data[subIdx + 1];
+            bSum += data[addIdx + 2] - data[subIdx + 2];
+            aSum += data[addIdx + 3] - data[subIdx + 3];
+        }
+    }
+    data.set(temp);
+}
+
+// 画像を指定位置に描画したうえで、彩度・コントラスト・ぼかしを
+// ピクセル処理で適用したオフスクリーンcanvasを返す。
+// (ctx.filterを使わないので clip との組み合わせでも iOS Safari で確実に動く)
+function makeProcessedBackground(img, W, H, offsetX, offsetY, drawW, drawH, saturationPct, contrastPct, blurPx) {
+    const off = document.createElement('canvas');
+    off.width = W;
+    off.height = H;
+    const offCtx = off.getContext('2d');
+    offCtx.drawImage(img, offsetX, offsetY, drawW, drawH);
+
+    const saturation = saturationPct / 100;
+    const contrast = contrastPct / 100;
+    if (saturation !== 1 || contrast !== 1 || blurPx > 0) {
+        const imageData = offCtx.getImageData(0, 0, W, H);
+        applySaturationContrast(imageData, saturation, contrast);
+        if (blurPx > 0) boxBlur(imageData, Math.round(blurPx));
+        offCtx.putImageData(imageData, 0, 0);
+    }
+    return off;
+}
+
+// ------------------------------------------------------------
 // 画像読み込み
 // ------------------------------------------------------------
 imageLoader.addEventListener('change', (e) => {
@@ -552,43 +687,27 @@ function render(ctx, W, H) {
         const { drawW, drawH, offsetX, offsetY } = computeImageDrawRect(loadedImage, W, H);
 
         // 1. 背景
+        // ctx.filter (saturate+blurの複合指定) は iOS Safari で反応しない
+        // ことがあるため、オフスクリーンcanvasにピクセル処理で適用してから
+        // drawImage で合成する(drawImageはclipに正しく従う)。
         ctx.save();
         ctx.beginPath();
         ctx.rect(0, 0, W, H);
         ctx.rect(box.left, box.top, box.width, box.height);
         ctx.clip('evenodd');
 
-        if (blurPx > 0) {
-            // ▼ iPhone(iOS)対策：縮小・拡大による擬似ブラー処理
-            const tempCanvas = document.createElement('canvas');
-            const tCtx = tempCanvas.getContext('2d');
-            
-            // ぼかしの強さに合わせて縮小率を変える（値が大きいほど粗く、つまり強くぼける）
-            const scale = Math.max(0.02, 1 / (blurPx * 0.8 + 1));
-            const sw = Math.max(1, Math.floor(drawW * scale));
-            const sh = Math.max(1, Math.floor(drawH * scale));
-            
-            tempCanvas.width = sw;
-            tempCanvas.height = sh;
-            
-            // 一度小さく描画してから引き延ばすことで、iOSでも綺麗にぼかしを再現
-            tCtx.drawImage(loadedImage, 0, 0, sw, sh);
-            
-            ctx.filter = satFilter;
-            ctx.drawImage(tempCanvas, 0, 0, sw, sh, offsetX, offsetY, drawW, drawH);
-            ctx.filter = 'none';
-        } else {
-            ctx.filter = satFilter;
-            ctx.drawImage(loadedImage, offsetX, offsetY, drawW, drawH);
-            ctx.filter = 'none';
-        }
+        const bgCanvas = makeProcessedBackground(
+            loadedImage, W, H, offsetX, offsetY, drawW, drawH,
+            satValNum, 120, blurPx
+        );
+        ctx.drawImage(bgCanvas, 0, 0);
 
         if (blurPx > 0) {
             ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
             ctx.fillRect(0, 0, W, H);
         }
         ctx.restore();
-        
+
         // 2. テクスチャ
         if (grainValNum > 0) {
             const textureType = textureTypeInput.value;
