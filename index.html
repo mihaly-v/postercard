@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liquid Glass UI Generator (Canvas Single Source)</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- コントロールパネル -->
+        <div class="controls-panel">
+            <div class="control-section glass">
+                <h3>// FILE:</h3>
+                <div class="control-row">
+                    <div class="control-group">
+                        <label>// ASPECT RATIO</label>
+                        <select id="resolutionSelect">
+                            <option value="1000x1593" selected>PORTRAIT (1000×1593)</option>
+                            <option value="1593x1000">LANDSCAPE (1593×1000)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <div class="control-group">
+                        <label>// UPLOAD IMAGE (AUTO RESIZE)</label>
+                        <input type="file" id="imageLoader" accept="image/*">
+                    </div>
+                </div>
+                <div class="control-row ">
+                    <div class="control-group ">
+                        <label>&nbsp;</label>
+                        <button class="btn" id="saveImgBtn" style="background: rgba(255,255,255,0.25); font-weight: bold;">// DOWNLOAD IMAGE FILE</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-section glass">
+                <h3>// LIQUID GLASS STYLE:</h3>
+                <div class="control-row">
+                    <div class="control-group">
+                        <label>// BLUR INTENSITY: <span id="blurVal">14</span>px</label>
+                        <input type="range" id="blurIntensity" min="0" max="35" value="14">
+                    </div>
+                    <div class="control-group" style="justify-content: flex-end; max-width: 90px;">
+                        <label>&nbsp;</label>
+                        <button class="btn" id="resetImgBtn">RESET</button>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <div class="control-group">
+                        <label>// OUTSIDE TEXTURE</label>
+                        <select id="textureType">
+                            <option value="grain">FILM GRAIN</option>
+                            <option value="frosted" selected>FROSTED GLASS</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>// TEXTURE INTENSITY: <span id="grainVal">100</span>%</label>
+                        <input type="range" id="grainIntensity" min="0" max="100" value="100">
+                    </div>
+                    <div class="control-group">
+                        <label>// OUTSIDE SATURATION: <span id="satVal">100</span>%</label>
+                        <input type="range" id="bgSaturation" min="0" max="100" value="100">
+                    </div>
+                </div>
+                
+                <div class="control-row">
+                    <div class="control-group">
+                        <label>// INSIDE SATURATION: <span id="insideSatVal">100</span>%</label>
+                        <input type="range" id="insideSaturation" min="0" max="100" value="100">
+                    </div>
+                </div>
+                <div class="control-row">
+                    <div class="control-group">
+                        <label>// FRAME WIDTH</label>
+                        <input type="range" id="borderWidth" min="1" max="8" value="1">
+                    </div>
+                    <div class="control-group">
+                        <label>// FRAME COLOR</label>
+                        <input type="color" id="borderColor" value="#ffffff">
+                    </div>
+                    <div class="control-group">
+                        <label>// CROSSHAIR</label>
+                        <select id="showCross">
+                            <option value="none">OFF</option>
+                            <option value="show">ON</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TEXT 01 (TITLE) -->
+            <div class="control-section glass">
+                <h3>// TEXT 01 (TITLE - FF14 JOB):</h3>
+                <div class="control-row">
+                    <div class="control-group" style="flex: 2;">
+                        <label>// JOB SELECT</label>
+                        <select id="titleText">
+                            <optgroup label="-- TANK --">
+                                <option value="PALADIN" selected>Paladin</option>
+                                <option value="WARRIOR">Warrior</option>
+                                <option value="DARK KNIGHT">Dark Knight</option>
+                                <option value="GUNBREAKER">Gunbreaker</option>
+                            </optgroup>
+                            <optgroup label="-- HEALER --">
+                                <option value="WHITE MAGE">White Mage</option>
+                                <option value="SCHOLAR">Scholar</option>
+                                <option value="ASTROLOGIAN">Astrologian</option>
+                                <option value="SAGE">Sage</option>
+                            </optgroup>
+                            <optgroup label="-- MELEE DPS --">
+                                <option value="MONK">Monk</option>
+                                <option value="DRAGOON">Dragoon</option>
+                                <option value="NINJA">Ninja</option>
+                                <option value="SAMURAI">Samurai</option>
+                                <option value="REAPER">Reaper</option>
+                                <option value="VIPER">Viper</option>
+                            </optgroup>
+                            <optgroup label="-- PHYSICAL RANGED DPS --">
+                                <option value="BARD">Bard</option>
+                                <option value="MACHINIST">Machinist</option>
+                                <option value="DANCER">Dancer</option>
+                            </optgroup>
+                            <optgroup label="-- MAGICAL RANGED DPS --">
+                                <option value="BLACK MAGE">Black Mage</option>
+                                <option value="SUMMONER">Summoner</option>
+                                <option value="RED MAGE">Red Mage</option>
+                                <option value="PICTOMANCER">Pictomancer</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="control-group" style="flex: 1;">
+                        <label>// POSITION</label>
+                        <select id="titlePosition">
+                            <option value="bottom" selected>BOTTOM (CLEAR / OUTSIDE)</option>
+                            <!-- <option value="inside-bottom">INSIDE BOTTOM</option> -->
+                            <option value="top">TOP (CLEAR / OUTSIDE)</option>
+                            <!-- <option value="inside-top">INSIDE TOP</option> -->
+                            <option value="left">LEFT</option>
+                            <option value="right">RIGHT</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <div class="control-group">
+                        <label>// SIZE</label>
+                        <input type="number" id="titleSize" value="22" min="8" max="100">
+                    </div>
+                    <div class="control-group">
+                        <label>// ALIGN <span id="titleAlignNote" style="color:var(--text-sub); font-size:9px;"></span></label>
+                        <select id="titleAlign">
+                            <option value="left" selected>LEFT</option>
+                            <option value="center">CENTER</option>
+                            <option value="right">RIGHT</option>
+                        </select>
+                    </div>
+                    <div class="control-group" id="titleVAlignGroup">
+                        <label>// V-ALIGN (LEFT/RIGHT)</label>
+                        <select id="titleVAlign">
+                            <option value="top" selected>TOP</option>
+                            <option value="bottom">BOTTOM</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>// COLOR</label>
+                        <input type="color" id="titleColor" value="#ffffff">
+                    </div>
+                </div>
+            </div>
+
+            <!-- TEXT 02 (BODY - WORLD/DC) -->
+            <div class="control-section glass">
+                <h3>// TEXT 02 (BODY - WORLD SELECT):</h3>
+                <div class="control-row">
+                    <div class="control-group" style="flex: 2;">
+                        <label>// WORLD / DC</label>
+                        <select id="bodyText">
+                            <option value="Secret">Secret</option>
+                            
+                            <!-- === 日本 (Japan Data Center) === -->
+                            <optgroup label="-- Elemental (JP) --">
+                                <option value="Elemental / Secret">Secret</option>
+                                <option value="Elemental / Aegis">Aegis</option>
+                                <option value="Elemental / Atomos">Atomos</option>
+                                <option value="Elemental / Carbuncle">Carbuncle</option>
+                                <option value="Elemental / Garuda">Garuda</option>
+                                <option value="Elemental / Gungnir">Gungnir</option>
+                                <option value="Elemental / Kujata">Kujata</option>
+                                <option value="Elemental / Tonberry">Tonberry</option>
+                                <option value="Elemental / Typhon">Typhon</option>
+                            </optgroup>
+                            <optgroup label="-- Gaia (JP) --">
+                                <option value="Gaia / Secret">Secret</option>
+                                <option value="Gaia / Alexander">Alexander</option>
+                                <option value="Gaia / Bahamut">Bahamut</option>
+                                <option value="Gaia / Durandal">Durandal</option>
+                                <option value="Gaia / Fenrir">Fenrir</option>
+                                <option value="Gaia / Ifrit">Ifrit</option>
+                                <option value="Gaia / Ridill">Ridill</option>
+                                <option value="Gaia / Tiamat">Tiamat</option>
+                                <option value="Gaia / Ultima">Ultima</option>
+                            </optgroup>
+                            <optgroup label="-- Mana (JP) --">
+                                <option value="Mana / Secret">Secret</option>
+                                <option value="Mana / Anima">Anima</option>
+                                <option value="Mana / Asura">Asura</option>
+                                <option value="Mana / Chocobo">Chocobo</option>
+                                <option value="Mana / Hades">Hades</option>
+                                <option value="Mana / Ixion" selected>Ixion</option>
+                                <option value="Mana / Masamune">Masamune</option>
+                                <option value="Mana / Pandaemonium">Pandaemonium</option>
+                                <option value="Mana / Titan">Titan</option>
+                            </optgroup>
+                            <optgroup label="-- Meteor (JP) --">
+                                <option value="Meteor / Secret">Secret</option>
+                                <option value="Meteor / Belias">Belias</option>
+                                <option value="Meteor / Mandragora">Mandragora</option>
+                                <option value="Meteor / Ramuh">Ramuh</option>
+                                <option value="Meteor / Shinryu">Shinryu</option>
+                                <option value="Meteor / Unicorn">Unicorn</option>
+                                <option value="Meteor / Valefor">Valefor</option>
+                                <option value="Meteor / Yojimbo">Yojimbo</option>
+                                <option value="Meteor / Zeromus">Zeromus</option>
+                            </optgroup>
+
+                            <!-- === 北米 (North America Data Center) === -->
+                            <optgroup label="-- Aether (NA) --">
+                                <option value="Aether / Secret">Secret</option>
+                                <option value="Aether / Adamantoise">Adamantoise</option>
+                                <option value="Aether / Cactuar">Cactuar</option>
+                                <option value="Aether / Faerie">Faerie</option>
+                                <option value="Aether / Gilgamesh">Gilgamesh</option>
+                                <option value="Aether / Jenova">Jenova</option>
+                                <option value="Aether / Midgardsormr">Midgardsormr</option>
+                                <option value="Aether / Sargatanas">Sargatanas</option>
+                                <option value="Aether / Siren">Siren</option>
+                            </optgroup>
+                            <optgroup label="-- Crystal (NA) --">
+                                <option value="Crystal / Secret">Secret</option>
+                                <option value="Crystal / Balmung">Balmung</option>
+                                <option value="Crystal / Brynhildr">Brynhildr</option>
+                                <option value="Crystal / Coeurl">Coeurl</option>
+                                <option value="Crystal / Diabolos">Diabolos</option>
+                                <option value="Crystal / Goblin">Goblin</option>
+                                <option value="Crystal / Malboro">Malboro</option>
+                                <option value="Crystal / Mateus">Mateus</option>
+                                <option value="Crystal / Zalera">Zalera</option>
+                            </optgroup>
+                            <optgroup label="-- Dynamis (NA) --">
+                                <option value="Dynamis / Secret">Secret</option>
+                                <option value="Dynamis / Cuchulainn">Cuchulainn</option>
+                                <option value="Dynamis / Golem">Golem</option>
+                                <option value="Dynamis / Halicarnassus">Halicarnassus</option>
+                                <option value="Dynamis / Kraken">Kraken</option>
+                                <option value="Dynamis / Maduin">Maduin</option>
+                                <option value="Dynamis / Marilith">Marilith</option>
+                                <option value="Dynamis / Rafflesia">Rafflesia</option>
+                                <option value="Dynamis / Seraph">Seraph</option>
+                            </optgroup>
+                            <optgroup label="-- Primal (NA) --">
+                                <option value="Primal / Secret">Secret</option>
+                                <option value="Primal / Behemoth">Behemoth</option>
+                                <option value="Primal / Excalibur">Excalibur</option>
+                                <option value="Primal / Exodus">Exodus</option>
+                                <option value="Primal / Famfrit">Famfrit</option>
+                                <option value="Primal / Hyperion">Hyperion</option>
+                                <option value="Primal / Lamia">Lamia</option>
+                                <option value="Primal / Leviathan">Leviathan</option>
+                                <option value="Primal / Ultros">Ultros</option>
+                            </optgroup>
+
+                            <!-- === 欧州 (European Data Center) === -->
+                            <optgroup label="-- Chaos (EU) --">
+                                <option value="Chaos / Secret">Secret</option>
+                                <option value="Chaos / Cerberus">Cerberus</option>
+                                <option value="Chaos / Louisoix">Louisoix</option>
+                                <option value="Chaos / Moogle">Moogle</option>
+                                <option value="Chaos / Omega">Omega</option>
+                                <option value="Chaos / Phantom">Phantom</option>
+                                <option value="Chaos / Ragnarok">Ragnarok</option>
+                                <option value="Chaos / Sagittarius">Sagittarius</option>
+                                <option value="Chaos / Spriggan">Spriggan</option>
+                            </optgroup>
+                            <optgroup label="-- Light (EU) --">
+                                <option value="Light / Secret">Secret</option>
+                                <option value="Light / Alpha">Alpha</option>
+                                <option value="Light / Phoenix">Phoenix</option>
+                                <option value="Light / Raiden">Raiden</option>
+                                <option value="Light / Shiva">Shiva</option>
+                                <option value="Light / Twintania">Twintania</option>
+                                <option value="Light / Zodiark">Zodiark</option>
+                                <option value="Light / Lich">Lich</option>
+                                <option value="Light / Odin">Odin</option>
+                            </optgroup>
+
+                            <!-- === オセアニア (Oceanian Data Center) === -->
+                            <optgroup label="-- Materia (OC) --">
+                                <option value="Materia / Secret">Secret</option>
+                                <option value="Materia / Bismarck">Bismarck</option>
+                                <option value="Materia / Ravana">Ravana</option>
+                                <option value="Materia / Sephirot">Sephirot</option>
+                                <option value="Materia / Sophia">Sophia</option>
+                                <option value="Materia / Zurvan">Zurvan</option>
+                            </optgroup>
+
+                            <!-- === 韓国 (Korean Data Center) === -->
+                            <optgroup label="-- Korea (KR) --">
+                                <option value="Korea / Secret">Secret</option>
+                                <option value="Korea / Carbuncle">Carbuncle</option>
+                                <option value="Korea / Chocobo">Chocobo</option>
+                                <option value="Korea / Moogle">Moogle</option>
+                                <option value="Korea / Tonberry">Tonberry</option>
+                                <option value="Korea / Fenrir">Fenrir</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="control-group" style="flex: 1;">
+                        <label>// POSITION</label>
+                        <select id="bodyPosition">
+                            <option value="bottom" selected>BOTTOM (CLEAR / OUTSIDE)</option>
+                            <!-- <option value="inside-bottom">INSIDE BOTTOM</option> -->
+                            <option value="top">TOP (CLEAR / OUTSIDE)</option>
+                            <!-- <option value="inside-top">INSIDE TOP</option> -->
+                            <option value="left">LEFT</option>
+                            <option value="right">RIGHT</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <div class="control-group">
+                        <label>// SIZE</label>
+                        <input type="number" id="bodySize" value="11" min="6" max="50">
+                    </div>
+                    <div class="control-group">
+                        <label>// ALIGN <span id="bodyAlignNote" style="color:var(--text-sub); font-size:9px;"></span></label>
+                        <select id="bodyAlign">
+                            <option value="left" selected>LEFT</option>
+                            <option value="center">CENTER</option>
+                            <option value="right">RIGHT</option>
+                        </select>
+                    </div>
+                    <div class="control-group" id="bodyVAlignGroup">
+                        <label>// V-ALIGN (LEFT/RIGHT)</label>
+                        <select id="bodyVAlign">
+                            <option value="top" selected>TOP</option>
+                            <option value="bottom">BOTTOM</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>// COLOR</label>
+                        <input type="color" id="bodyColor" value="#ffffff">
+                    </div>
+                </div>
+            </div>
+
+            <!-- TEXT 05 (TOP HEADER TRIPLE TEXT) -->
+            <div class="control-section glass">
+                <h3>// TEXT 05 (TOP HEADER: LEFT / CENTER / RIGHT):</h3>
+                <div class="control-row">
+                    <div class="control-group">
+                        <label>// LEFT TEXT (CATEGORY)</label>
+                        <select id="topHeaderLeft">
+                            <option value="STORY" selected>STORY</option>
+                            <option value="CHAT/RP">CHAT/RP</option>
+                            <option value="GLAMOUR">GLAMOUR</option>
+                            <option value="HOUSING">HOUSING</option>
+                            <option value="SCREENSHOT">SCREENSHOT</option>
+                            <option value="PVP">PVP</option>
+                            <option value="CRAFTER">CRAFTER</option>
+                            <option value="GATHER">GATHER</option>
+                            <option value="RAID">RAID</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>// CENTER TEXT (EXPANSION)</label>
+                        <select id="topHeaderCenter">
+                            <option value="A REALM REBORN">A REALM REBORN</option>
+                            <option value="HEAVENSWARD">HEAVENSWARD</option>
+                            <option value="STORMBLOOD">STORMBLOOD</option>
+                            <option value="SHADOWBRINGERS">SHADOWBRINGERS</option>
+                            <option value="ENDWALKER">ENDWALKER</option>
+                            <option value="DAWNTRAIL" selected>DAWNTRAIL</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>// RIGHT TEXT (RACE)</label>
+                        <select id="topHeaderRight">
+                            <option value="HYUR" selected>Hyur</option>
+                            <option value="ELEZEN">Elezen</option>
+                            <option value="LALAFELL">Lalafell</option>
+                            <option value="MIQO'TE">Miqo'te</option>
+                            <option value="ROEGADYN">Roegadyn</option>
+                            <option value="AU RA">Au Ra</option>
+                            <option value="HROTHGAR">Hrothgar</option>
+                            <option value="VIERA">Viera</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <div class="control-group">
+                        <label>// SIZE (MATCHES TEXT 02)</label>
+                        <input type="number" id="topHeaderSize" value="11" min="6" max="50">
+                    </div>
+                    <div class="control-group">
+                        <label>// COLOR</label>
+                        <input type="color" id="topHeaderColor" value="#ffffff">
+                    </div>
+                </div>
+            </div>
+
+            <!-- TEXT 03 -->
+            <div class="control-section glass">
+                <h3>// TEXT 03 (FOOTER EFFECT):</h3>
+                <div class="control-row">
+                    <div class="control-group" style="flex: 2;">
+                        <label>// CONTENT</label>
+                        <input type="text" id="extraText" value="REVEAL">
+                    </div>
+                    <div class="control-group" style="flex: 1;">
+                        <label>// TYPE</label>
+                        <select id="extraType">
+                            <option value="reveal">IMAGE REVEAL</option>
+                            <option value="white" selected>SOLID WHITE</option>
+                            <option value="outline">OUTLINE (TRANSPARENT)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <div class="control-group">
+                        <label>// SIZE</label>
+                        <input type="number" id="extraSize" value="60" min="60" max="180">
+                    </div>
+                    <div class="control-group">
+                        <label>// ALIGN</label>
+                        <select id="extraAlign">
+                            <option value="left">LEFT</option>
+                            <option value="center" selected>CENTER</option>
+                            <option value="right">RIGHT</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>// COLOR (UNUSED)</label>
+                        <input type="color" id="extraColor" value="#ffffff">
+                    </div>
+                </div>
+            </div>
+
+            <!-- TEXT 04 (COPYRIGHT) -->
+            <div class="control-section glass">
+                <h3>// TEXT 04:</h3>
+                <div class="control-row">
+                    <div class="control-group" style="flex: 2;">
+                        <label>// CONTENT</label>
+                        <input type="text" id="copyText" value="©SQUARE ENIX">
+                    </div>
+                    <div class="control-group" style="flex: 1;">
+                        <label>// TYPE</label>
+                        <select id="copyType">
+                            <option value="reveal">IMAGE REVEAL</option>
+                            <option value="white" selected>SOLID WHITE</option>
+                            <option value="outline">OUTLINE (TRANSPARENT)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <div class="control-group">
+                        <label>// SIZE</label>
+                        <input type="number" id="copySize" value="10" min="8" max="12">
+                    </div>
+                    <div class="control-group">
+                        <label>// ALIGN</label>
+                        <select id="copyAlign">
+                            <option value="left">LEFT</option>
+                            <option value="center" selected>CENTER</option>
+                            <option value="right">RIGHT</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>// COLOR (UNUSED)</label>
+                        <input type="color" id="copyColor" value="#ffffff">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- プレビューエリア -->
+        <div class="preview-area">
+            <div class="preview-header" id="previewHeader">
+                <span>// PREVIEW = EXPORT (1:1 CANVAS) :</span>
+                <span id="renderStatus">READY</span>
+            </div>
+            <div id="viewer-container">
+                <canvas id="mainCanvas"></canvas>
+                <div id="crop-box">
+                    <div class="handle handle-tl" data-handle="tl"></div>
+                    <div class="handle handle-tr" data-handle="tr"></div>
+                    <div class="handle handle-bl" data-handle="bl"></div>
+                    <div class="handle handle-br" data-handle="br"></div>
+                </div>
+            </div>
+            <div class="help-text" id="helpText">// TIP: プレビューはCanvas描画そのもので、ダウンロード画像と完全に同一です。</div>
+        </div>
+    </div>
+
+    <!-- 保存確認モーダル -->
+    <div id="saveModalOverlay" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <span>// EXPORT PREVIEW</span>
+                <button id="modalCloseBtn" class="modal-close-btn" aria-label="close">&times;</button>
+            </div>
+            <div class="modal-image-wrap">
+                <img id="modalImage" alt="Generated export">
+            </div>
+            <div class="modal-help-text">// PC: 画像を右クリックして「名前を付けて画像を保存」<br>// iPhone/スマホ: 画像を長押ししてアーカイブ等に保存</div>
+            <div class="modal-actions">
+                <a id="modalDownloadLink" class="btn modal-download-btn" download="liquid-glass-ui.png">// SAVE IMAGE</a>
+                <button id="modalCloseBtn2" class="btn">CLOSE</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
