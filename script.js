@@ -558,16 +558,37 @@ function render(ctx, W, H) {
         ctx.rect(box.left, box.top, box.width, box.height);
         ctx.clip('evenodd');
 
-        ctx.filter = blurPx > 0 ? `${satFilter} blur(${blurPx}px)` : satFilter;
-        ctx.drawImage(loadedImage, offsetX, offsetY, drawW, drawH);
-        ctx.filter = 'none';
+        if (blurPx > 0) {
+            // ▼ iPhone(iOS)対策：縮小・拡大による擬似ブラー処理
+            const tempCanvas = document.createElement('canvas');
+            const tCtx = tempCanvas.getContext('2d');
+            
+            // ぼかしの強さに合わせて縮小率を変える（値が大きいほど粗く、つまり強くぼける）
+            const scale = Math.max(0.02, 1 / (blurPx * 0.8 + 1));
+            const sw = Math.max(1, Math.floor(drawW * scale));
+            const sh = Math.max(1, Math.floor(drawH * scale));
+            
+            tempCanvas.width = sw;
+            tempCanvas.height = sh;
+            
+            // 一度小さく描画してから引き延ばすことで、iOSでも綺麗にぼかしを再現
+            tCtx.drawImage(loadedImage, 0, 0, sw, sh);
+            
+            ctx.filter = satFilter;
+            ctx.drawImage(tempCanvas, 0, 0, sw, sh, offsetX, offsetY, drawW, drawH);
+            ctx.filter = 'none';
+        } else {
+            ctx.filter = satFilter;
+            ctx.drawImage(loadedImage, offsetX, offsetY, drawW, drawH);
+            ctx.filter = 'none';
+        }
 
         if (blurPx > 0) {
             ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
             ctx.fillRect(0, 0, W, H);
         }
         ctx.restore();
-
+        
         // 2. テクスチャ
         if (grainValNum > 0) {
             const textureType = textureTypeInput.value;
