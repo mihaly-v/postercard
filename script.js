@@ -25,23 +25,38 @@ const borderWidthInput = document.getElementById('borderWidth');
 const borderColorInput = document.getElementById('borderColor');
 const showCrossInput = document.getElementById('showCross');
 
+// 各反転チェックボックスの取得
+const textInvertInput = document.getElementById('textInvert'); // TEXT 01 / 02 共通
+const titleInvertInput = textInvertInput;
+const bodyInvertInput = textInvertInput;
+const topHeaderInvertInput = document.getElementById('topHeaderInvert');
+const extraInvertInput = document.getElementById('extraInvert');
+const copyInvertInput = document.getElementById('copyInvert');
+
 const titleTextInput = document.getElementById('titleText');
-const titlePositionInput = document.getElementById('titlePosition');
-const titleSizeInput = document.getElementById('titleSize');
-const titleAlignInput = document.getElementById('titleAlign');
-const titleVAlignInput = document.getElementById('titleVAlign');
-const titleVAlignGroup = document.getElementById('titleVAlignGroup');
-const titleAlignNote = document.getElementById('titleAlignNote');
-const titleColorInput = document.getElementById('titleColor');
+
+// TEXT 01 / 02 は POSITION・SIZE・ALIGN・V-ALIGN・COLOR・反転を共通の1セットで持つ。
+// 描画側は title* / body* のまま読めるように、同じ要素を両方の名前で参照させている。
+const textPositionInput = document.getElementById('textPosition');
+const textSizeInput = document.getElementById('textSize');
+const textAlignInput = document.getElementById('textAlign');
+const textVAlignInput = document.getElementById('textVAlign');
+const textVAlignGroup = document.getElementById('textVAlignGroup');
+const textAlignNote = document.getElementById('textAlignNote');
+const textColorInput = document.getElementById('textColor');
+
+const titlePositionInput = textPositionInput;
+const titleSizeInput = textSizeInput;
+const titleAlignInput = textAlignInput;
+const titleVAlignInput = textVAlignInput;
+const titleColorInput = textColorInput;
 
 const bodyTextInput = document.getElementById('bodyText');
-const bodyPositionInput = document.getElementById('bodyPosition');
-const bodySizeInput = document.getElementById('bodySize');
-const bodyAlignInput = document.getElementById('bodyAlign');
-const bodyVAlignInput = document.getElementById('bodyVAlign');
-const bodyVAlignGroup = document.getElementById('bodyVAlignGroup');
-const bodyAlignNote = document.getElementById('bodyAlignNote');
-const bodyColorInput = document.getElementById('bodyColor');
+const bodyPositionInput = textPositionInput;
+const bodySizeInput = textSizeInput;
+const bodyAlignInput = textAlignInput;
+const bodyVAlignInput = textVAlignInput;
+const bodyColorInput = textColorInput;
 
 // TEXT 05 (TOP HEADER TRIPLE TEXT) 用の要素
 const topHeaderLeftInput = document.getElementById('topHeaderLeft');
@@ -54,11 +69,13 @@ const extraTextInput = document.getElementById('extraText');
 const extraTypeInput = document.getElementById('extraType');
 const extraSizeInput = document.getElementById('extraSize');
 const extraAlignInput = document.getElementById('extraAlign');
+const extraColorInput = document.getElementById('extraColor');
 
 const copyTextInput = document.getElementById('copyText');
 const copyTypeInput = document.getElementById('copyType');
 const copySizeInput = document.getElementById('copySize');
 const copyAlignInput = document.getElementById('copyAlign');
+const copyColorInput = document.getElementById('copyColor');
 
 const FONT_STACK = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
 const textureTypeInput = document.getElementById('textureType');
@@ -71,19 +88,6 @@ let imgScale = 1;
 let imgPosX = 0;
 let imgPosY = 0;
 
-// 論理キャンバスサイズ(描画座標空間)を返すヘルパー。
-//
-// 以前は container.clientWidth(実際のCSS表示幅)をそのまま使っていたが、
-// これはPC/スマホでコンテナの表示幅が異なると描画の座標空間自体が
-// 変わってしまい、フォントサイズやpadding・gapなど「px絶対値」で
-// 指定している要素の見た目の比率がデバイスごとにズレる原因になっていた。
-// (boxLeftRatio等のクロップ枠比率はそもそも幅600を基準に設計されている)
-//
-// 論理サイズは常に固定値(BASE_WIDTH)にし、画面上の実際の表示サイズは
-// CSS側(mainCanvas.style.width/height = 100%)でスケーリングする。
-// マウス/タッチ座標は各イベントハンドラ内で
-// containerW / rect.width の比率変換を通しているため、
-// 論理サイズを固定してもポインタ操作の整合性は保たれる。
 const BASE_WIDTH = 600;
 
 function getContainerSize() {
@@ -106,7 +110,6 @@ let startX, startY, startLeft, startTop, startWidth, startHeight;
 let panStartX, panStartY;
 let renderScheduled = false;
 
-// ピンチズーム用の状態管理
 let initialPinchDistance = null;
 let initialPinchScale = 1;
 
@@ -189,12 +192,6 @@ function buildFrostedTile() {
 }
 buildFrostedTile();
 
-// ------------------------------------------------------------
-// iOS Safari 対策: ctx.filter (blur+saturate等の複合指定) は
-// iOS Safari で反応しないことがあるため、ピクセル処理で自前実装する。
-// ------------------------------------------------------------
-
-// 彩度・コントラストを行列演算で適用 (CSS filter: saturate() contrast() 相当)
 function applySaturationContrast(imageData, saturation, contrast) {
     const data = imageData.data;
     const lumR = 0.3086, lumG = 0.6094, lumB = 0.0820;
@@ -204,7 +201,6 @@ function applySaturationContrast(imageData, saturation, contrast) {
     const m10 = (1 - s) * lumR, m11 = (1 - s) * lumG + s, m12 = (1 - s) * lumB;
     const m20 = (1 - s) * lumR, m21 = (1 - s) * lumG, m22 = (1 - s) * lumB + s;
 
-    // contrast: (v - 128) * contrast + 128
     const cOffset = 128 * (1 - contrast);
 
     for (let i = 0; i < data.length; i += 4) {
@@ -220,7 +216,6 @@ function applySaturationContrast(imageData, saturation, contrast) {
     return imageData;
 }
 
-// 高速ボックスブラー(複数回重ねてガウスブラーに近似)
 function boxBlur(imageData, radius) {
     if (radius < 1) return imageData;
     const { data, width, height } = imageData;
@@ -303,9 +298,6 @@ function boxBlurVertical(data, width, height, radius) {
     data.set(temp);
 }
 
-// 画像を指定位置に描画したうえで、彩度・コントラスト・ぼかしを
-// ピクセル処理で適用したオフスクリーンcanvasを返す。
-// (ctx.filterを使わないので clip との組み合わせでも iOS Safari で確実に動く)
 function makeProcessedBackground(img, W, H, offsetX, offsetY, drawW, drawH, saturationPct, contrastPct, blurPx) {
     const off = document.createElement('canvas');
     off.width = W;
@@ -324,9 +316,6 @@ function makeProcessedBackground(img, W, H, offsetX, offsetY, drawW, drawH, satu
     return off;
 }
 
-// ------------------------------------------------------------
-// 画像読み込み
-// ------------------------------------------------------------
 imageLoader.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -384,45 +373,27 @@ function changeResolution() {
 }
 resolutionSelect.addEventListener('change', changeResolution);
 
-// ------------------------------------------------------------
-// コントロール変更時の同期制御（LEFT/RIGHT時のALIGN・V-ALIGN制御）
-// ------------------------------------------------------------
 function updateFieldStates() {
-    if (titlePositionInput.value === 'left') {
-        titleAlignInput.value = 'right';
-        titleAlignInput.disabled = true;
-        titleAlignNote.textContent = '(FIXED: RIGHT)';
-        titleVAlignGroup.style.display = 'flex';
-    } else if (titlePositionInput.value === 'right') {
-        titleAlignInput.value = 'left';
-        titleAlignInput.disabled = true;
-        titleAlignNote.textContent = '(FIXED: LEFT)';
-        titleVAlignGroup.style.display = 'flex';
+    // TEXT 01 / 02 共通：LEFT / RIGHT のときは ALIGN を固定し、V-ALIGN を表示する
+    if (textPositionInput.value === 'left') {
+        textAlignInput.value = 'right';
+        textAlignInput.disabled = true;
+        textAlignNote.textContent = '(FIXED: RIGHT)';
+        textVAlignGroup.style.display = 'flex';
+    } else if (textPositionInput.value === 'right') {
+        textAlignInput.value = 'left';
+        textAlignInput.disabled = true;
+        textAlignNote.textContent = '(FIXED: LEFT)';
+        textVAlignGroup.style.display = 'flex';
     } else {
-        titleAlignInput.disabled = false;
-        titleAlignNote.textContent = '';
-        titleVAlignGroup.style.display = 'none';
-    }
-
-    if (bodyPositionInput.value === 'left') {
-        bodyAlignInput.value = 'right';
-        bodyAlignInput.disabled = true;
-        bodyAlignNote.textContent = '(FIXED: RIGHT)';
-        bodyVAlignGroup.style.display = 'flex';
-    } else if (bodyPositionInput.value === 'right') {
-        bodyAlignInput.value = 'left';
-        bodyAlignInput.disabled = true;
-        bodyAlignNote.textContent = '(FIXED: LEFT)';
-        bodyVAlignGroup.style.display = 'flex';
-    } else {
-        bodyAlignInput.disabled = false;
-        bodyAlignNote.textContent = '';
-        bodyVAlignGroup.style.display = 'none';
+        textAlignInput.disabled = false;
+        textAlignNote.textContent = '';
+        textVAlignGroup.style.display = 'none';
     }
 }
 
-bodySizeInput.addEventListener('input', () => {
-    topHeaderSizeInput.value = bodySizeInput.value;
+textSizeInput.addEventListener('input', () => {
+    topHeaderSizeInput.value = textSizeInput.value;
     onControlsChanged();
 });
 
@@ -438,21 +409,18 @@ function onControlsChanged() {
 [
     blurIntensityInput, grainIntensityInput, bgSaturationInput, insideSaturationInput, textureTypeInput,
     borderWidthInput, borderColorInput, showCrossInput,
-    titleTextInput, titlePositionInput, titleSizeInput, titleAlignInput, titleVAlignInput, titleColorInput,
-    bodyTextInput, bodyPositionInput, bodySizeInput, bodyAlignInput, bodyVAlignInput, bodyColorInput,
+    textInvertInput, topHeaderInvertInput, extraInvertInput, copyInvertInput,
+    titleTextInput, bodyTextInput,
+    textPositionInput, textSizeInput, textAlignInput, textVAlignInput, textColorInput,
     topHeaderLeftInput, topHeaderCenterInput, topHeaderRightInput, topHeaderSizeInput, topHeaderColorInput,
-    extraTextInput, extraSizeInput, extraAlignInput, extraTypeInput,
-    copyTextInput, copyTypeInput, copySizeInput, copyAlignInput
+    extraTextInput, extraSizeInput, extraAlignInput, extraTypeInput, extraColorInput,
+    copyTextInput, copyTypeInput, copySizeInput, copyAlignInput, copyColorInput
 ].forEach(el => {
     if (el) {
         el.addEventListener('input', onControlsChanged);
         el.addEventListener('change', onControlsChanged);
     }
 });
-
-// ------------------------------------------------------------
-// 画像パン・ズーム・クロップボックスの操作（マウス・タッチ共通）
-// ------------------------------------------------------------
 
 container.addEventListener('wheel', (e) => {
     e.preventDefault();
@@ -700,10 +668,6 @@ function render(ctx, W, H) {
     if (loadedImage) {
         const { drawW, drawH, offsetX, offsetY } = computeImageDrawRect(loadedImage, W, H);
 
-        // 1. 背景
-        // ctx.filter (saturate+blurの複合指定) は iOS Safari で反応しない
-        // ことがあるため、オフスクリーンcanvasにピクセル処理で適用してから
-        // drawImage で合成する(drawImageはclipに正しく従う)。
         ctx.save();
         ctx.beginPath();
         ctx.rect(0, 0, W, H);
@@ -722,7 +686,6 @@ function render(ctx, W, H) {
         }
         ctx.restore();
 
-        // 2. テクスチャ
         if (grainValNum > 0) {
             const textureType = textureTypeInput.value;
             const tile = textureType === 'frosted' ? frostedTileCanvas : grainTileCanvas;
@@ -750,7 +713,6 @@ function render(ctx, W, H) {
             }
         }
 
-        // 3. クロップ内
         ctx.save();
         ctx.beginPath();
         ctx.rect(box.left, box.top, box.width, box.height);
@@ -774,14 +736,12 @@ function render(ctx, W, H) {
         }
         ctx.restore();
 
-        // 4. 枠線
         if (borderWidth > 0) {
             ctx.strokeStyle = borderColor;
             ctx.lineWidth = borderWidth;
             ctx.strokeRect(box.left, box.top, box.width, box.height);
         }
 
-        // 5. テキスト描画
         drawTexts(ctx, W, H, box, loadedImage, offsetX, offsetY, drawW, drawH, satFilter);
     } else {
         ctx.fillStyle = 'rgba(255,255,255,0.3)';
@@ -792,22 +752,87 @@ function render(ctx, W, H) {
     }
 }
 
+// ------------------------------------------------------------
+// 反転テキスト（白黒）
+// 文字を別レイヤーに描き、下地の輝度から求めた白黒で合成する。
+// 'binary' : 下地が明るければ #000、暗ければ #fff（完全な2値）
+// 'gray'   : 下地の明るさを反転したグレー（difference のモノクロ版）
+// ------------------------------------------------------------
+const INVERSE_TEXT_MODE = 'binary';
+
+function createInverseLayer(baseCtx) {
+    let layerCtx = null;
+    return {
+        // 反転テキストが実際に描かれたときだけレイヤーを作る
+        get ctx() {
+            if (!layerCtx) {
+                const layer = document.createElement('canvas');
+                layer.width = baseCtx.canvas.width;
+                layer.height = baseCtx.canvas.height;
+                layerCtx = layer.getContext('2d');
+                layerCtx.setTransform(baseCtx.getTransform());
+            }
+            return layerCtx;
+        },
+        apply() {
+            if (!layerCtx) return;
+            const w = baseCtx.canvas.width;
+            const h = baseCtx.canvas.height;
+            const base = baseCtx.getImageData(0, 0, w, h);
+            const mask = layerCtx.getImageData(0, 0, w, h);
+            const b = base.data;
+            const m = mask.data;
+
+            // binary：テクスチャのノイズで文字の中が白黒まだらにならないよう、
+            // 白黒の判定には周囲を平均化した輝度を使う
+            let smoothLum = null;
+            if (INVERSE_TEXT_MODE === 'binary') {
+                const scale = baseCtx.getTransform().a || 1;
+                const lumImg = new ImageData(new Uint8ClampedArray(b), w, h);
+                const d = lumImg.data;
+                for (let i = 0; i < d.length; i += 4) {
+                    d[i] = d[i + 1] = d[i + 2] = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+                }
+                boxBlur(lumImg, Math.max(1, Math.round(6 * scale)));
+                smoothLum = lumImg.data;
+            }
+
+            for (let i = 0; i < m.length; i += 4) {
+                const a = m[i + 3];
+                if (a === 0) continue;
+                const target = smoothLum
+                    ? (smoothLum[i] >= 128 ? 0 : 255)
+                    : 255 - (0.299 * b[i] + 0.587 * b[i + 1] + 0.114 * b[i + 2]);
+                const t = a / 255;
+                b[i]     = b[i]     * (1 - t) + target * t;
+                b[i + 1] = b[i + 1] * (1 - t) + target * t;
+                b[i + 2] = b[i + 2] * (1 - t) + target * t;
+            }
+            baseCtx.putImageData(base, 0, 0);
+        }
+    };
+}
+
 function drawTexts(ctx, W, H, box, img, offsetX, offsetY, drawW, drawH, satFilter) {
     const tPos = titlePositionInput.value;
     const bPos = bodyPositionInput.value;
     const gap = 12;
+    const inv = createInverseLayer(ctx);
+    const pick = (isInverse) => (isInverse ? inv.ctx : ctx);
 
     const titleText = titleTextInput.value;
     const titleSize = parseInt(titleSizeInput.value, 10);
     const titleAlign = titleAlignInput.value;
     const titleVAlign = titleVAlignInput.value;
     const titleColor = titleColorInput.value;
+    const isTitleInverse = titleInvertInput ? titleInvertInput.checked : false;
 
     const bodyText = bodyTextInput.value;
     const bodySize = parseInt(bodySizeInput.value, 10);
     const bodyAlign = bodyAlignInput.value;
     const bodyVAlign = bodyVAlignInput.value;
     const bodyColor = bodyColorInput.value;
+    const isBodyInverse = bodyInvertInput ? bodyInvertInput.checked : false;
 
     let titleH = 0;
     let bodyH = 0;
@@ -821,12 +846,15 @@ function drawTexts(ctx, W, H, box, img, offsetX, offsetY, drawW, drawH, satFilte
         bodyH = bodyText.split('\n').length * bodySize * 1.3;
     }
 
-    function renderBlock(text, pos, size, align, vAlign, color, bold, currentY) {
+    function renderBlock(text, pos, size, align, vAlign, color, bold, currentY, isInverse) {
         if (!text) return 0;
-        ctx.font = `${bold ? 'bold ' : ''}${size}px ${FONT_STACK}`;
-        ctx.textBaseline = 'top';
-        ctx.fillStyle = color;
-        ctx.textAlign = align;
+
+        const c = pick(isInverse);
+        c.save();
+        c.fillStyle = isInverse ? '#ffffff' : color;
+        c.font = `${bold ? 'bold ' : ''}${size}px ${FONT_STACK}`;
+        c.textBaseline = 'top';
+        c.textAlign = align;
 
         const lines = text.split('\n');
         const blockH = lines.length * size * 1.3;
@@ -840,7 +868,8 @@ function drawTexts(ctx, W, H, box, img, offsetX, offsetY, drawW, drawH, satFilte
             x = padding;
             if (align === 'center') x = W / 2;
             if (align === 'right') x = W - padding;
-            lines.forEach((line, idx) => ctx.fillText(line, x, currentY + idx * size * 1.3));
+            lines.forEach((line, idx) => c.fillText(line, x, currentY + idx * size * 1.3));
+            c.restore();
             return blockH;
         }
 
@@ -848,49 +877,51 @@ function drawTexts(ctx, W, H, box, img, offsetX, offsetY, drawW, drawH, satFilte
             let y = currentY;
             if (pos === 'left') x = box.left - gap;
             if (pos === 'right') x = box.left + box.width + gap;
-            lines.forEach((line, idx) => ctx.fillText(line, x, y + idx * size * 1.3));
+            lines.forEach((line, idx) => c.fillText(line, x, y + idx * size * 1.3));
+            c.restore();
             return blockH;
         }
 
         let y = currentY;
-        lines.forEach((line, idx) => ctx.fillText(line, x, y + idx * size * 1.3));
+        lines.forEach((line, idx) => c.fillText(line, x, y + idx * size * 1.3));
+        c.restore();
         return blockH;
     }
 
     if (tPos === bPos && titleText && bodyText) {
         if (tPos === 'bottom') {
             const startY1 = box.top + box.height + gap;
-            renderBlock(titleText, tPos, titleSize, titleAlign, titleVAlign, titleColor, true, startY1);
+            renderBlock(titleText, tPos, titleSize, titleAlign, titleVAlign, titleColor, true, startY1, isTitleInverse);
             const startY2 = startY1 + titleH + 8;
-            renderBlock(bodyText, bPos, bodySize, bodyAlign, bodyVAlign, bodyColor, false, startY2);
+            renderBlock(bodyText, bPos, bodySize, bodyAlign, bodyVAlign, bodyColor, false, startY2, isBodyInverse);
         } else if (tPos === 'top') {
             const totalH = titleH + 8 + bodyH;
             const startY1 = box.top - gap - totalH;
-            renderBlock(titleText, tPos, titleSize, titleAlign, titleVAlign, titleColor, true, startY1);
+            renderBlock(titleText, tPos, titleSize, titleAlign, titleVAlign, titleColor, true, startY1, isTitleInverse);
             const startY2 = startY1 + titleH + 8;
-            renderBlock(bodyText, bPos, bodySize, bodyAlign, bodyVAlign, bodyColor, false, startY2);
+            renderBlock(bodyText, bPos, bodySize, bodyAlign, bodyVAlign, bodyColor, false, startY2, isBodyInverse);
         } else if (tPos === 'inside-top') {
             const padding = 16;
             const startY1 = padding;
-            renderBlock(titleText, tPos, titleSize, titleAlign, titleVAlign, titleColor, true, startY1);
+            renderBlock(titleText, tPos, titleSize, titleAlign, titleVAlign, titleColor, true, startY1, isTitleInverse);
             const startY2 = startY1 + titleH + 8;
-            renderBlock(bodyText, bPos, bodySize, bodyAlign, bodyVAlign, bodyColor, false, startY2);
+            renderBlock(bodyText, bPos, bodySize, bodyAlign, bodyVAlign, bodyColor, false, startY2, isBodyInverse);
         } else if (tPos === 'inside-bottom') {
             const padding = 16;
             const totalH = titleH + 8 + bodyH;
             const startY1 = H - padding - totalH;
-            renderBlock(titleText, tPos, titleSize, titleAlign, titleVAlign, titleColor, true, startY1);
+            renderBlock(titleText, tPos, titleSize, titleAlign, titleVAlign, titleColor, true, startY1, isTitleInverse);
             const startY2 = startY1 + titleH + 8;
-            renderBlock(bodyText, bPos, bodySize, bodyAlign, bodyVAlign, bodyColor, false, startY2);
+            renderBlock(bodyText, bPos, bodySize, bodyAlign, bodyVAlign, bodyColor, false, startY2, isBodyInverse);
         } else if (tPos === 'left' || tPos === 'right') {
             let startY1 = box.top;
             if (titleVAlign === 'bottom') {
                 const totalH = titleH + 8 + bodyH;
                 startY1 = box.top + box.height - totalH;
             }
-            renderBlock(titleText, tPos, titleSize, titleAlign, titleVAlign, titleColor, true, startY1);
+            renderBlock(titleText, tPos, titleSize, titleAlign, titleVAlign, titleColor, true, startY1, isTitleInverse);
             const startY2 = startY1 + titleH + 8;
-            renderBlock(bodyText, bPos, bodySize, bodyAlign, bodyVAlign, bodyColor, false, startY2);
+            renderBlock(bodyText, bPos, bodySize, bodyAlign, bodyVAlign, bodyColor, false, startY2, isBodyInverse);
         }
     } else {
         if (titleText) {
@@ -901,7 +932,7 @@ function drawTexts(ctx, W, H, box, img, offsetX, offsetY, drawW, drawH, satFilte
             else if (tPos === 'left' || tPos === 'right') {
                 startY = titleVAlign === 'bottom' ? box.top + box.height - titleH : box.top;
             }
-            renderBlock(titleText, tPos, titleSize, titleAlign, titleVAlign, titleColor, true, startY);
+            renderBlock(titleText, tPos, titleSize, titleAlign, titleVAlign, titleColor, true, startY, isTitleInverse);
         }
 
         if (bodyText) {
@@ -912,7 +943,7 @@ function drawTexts(ctx, W, H, box, img, offsetX, offsetY, drawW, drawH, satFilte
             else if (bPos === 'left' || bPos === 'right') {
                 startY = bodyVAlign === 'bottom' ? box.top + box.height - bodyH : box.top;
             }
-            renderBlock(bodyText, bPos, bodySize, bodyAlign, bodyVAlign, bodyColor, false, startY);
+            renderBlock(bodyText, bPos, bodySize, bodyAlign, bodyVAlign, bodyColor, false, startY, isBodyInverse);
         }
     }
 
@@ -923,27 +954,29 @@ function drawTexts(ctx, W, H, box, img, offsetX, offsetY, drawW, drawH, satFilte
     const tRightText = topHeaderRightInput ? topHeaderRightInput.value : '';
     const tHeaderSize = topHeaderSizeInput ? (parseInt(topHeaderSizeInput.value, 10) || parseInt(bodySizeInput.value, 10)) : 11;
     const tHeaderColor = topHeaderColorInput ? topHeaderColorInput.value : '#ffffff';
+    const isTopHeaderInverse = topHeaderInvertInput ? topHeaderInvertInput.checked : false;
 
     if (tLeftText || tCenterText || tRightText) {
-        ctx.save();
-        ctx.font = `${tHeaderSize}px ${FONT_STACK}`;
-        ctx.fillStyle = tHeaderColor;
-        ctx.textBaseline = 'top';
+        const c = pick(isTopHeaderInverse);
+        c.save();
+        c.fillStyle = isTopHeaderInverse ? '#ffffff' : tHeaderColor;
+        c.font = `${tHeaderSize}px ${FONT_STACK}`;
+        c.textBaseline = 'top';
         const topPadding = 24;
 
         if (tLeftText) {
-            ctx.textAlign = 'left';
-            ctx.fillText(tLeftText, padding * 2, topPadding);
+            c.textAlign = 'left';
+            c.fillText(tLeftText, padding * 2, topPadding);
         }
         if (tCenterText) {
-            ctx.textAlign = 'center';
-            ctx.fillText(tCenterText, W / 2, topPadding);
+            c.textAlign = 'center';
+            c.fillText(tCenterText, W / 2, topPadding);
         }
         if (tRightText) {
-            ctx.textAlign = 'right';
-            ctx.fillText(tRightText, W - padding * 2, topPadding);
+            c.textAlign = 'right';
+            c.fillText(tRightText, W - padding * 2, topPadding);
         }
-        ctx.restore();
+        c.restore();
     }
 
     // TEXT 03
@@ -951,6 +984,8 @@ function drawTexts(ctx, W, H, box, img, offsetX, offsetY, drawW, drawH, satFilte
     const extraSize = parseInt(extraSizeInput.value, 10);
     const extraAlign = extraAlignInput.value;
     const extraType = extraTypeInput.value;
+    const extraColor = extraColorInput ? extraColorInput.value : '#ffffff';
+    const isExtraInverse = extraInvertInput ? extraInvertInput.checked : false;
 
     if (extraText) {
         let x = W / 2;
@@ -971,7 +1006,7 @@ function drawTexts(ctx, W, H, box, img, offsetX, offsetY, drawW, drawH, satFilte
             tCtx.font = `900 ${extraSize}px ${FONT_STACK}`;
             tCtx.textBaseline = 'top';
             tCtx.textAlign = extraAlign;
-            tCtx.fillStyle = '#ffffff';
+            tCtx.fillStyle = isExtraInverse ? '#ffffff' : extraColor;
             tCtx.fillText(extraText, x, y);
 
             tCtx.globalCompositeOperation = 'source-in';
@@ -980,22 +1015,24 @@ function drawTexts(ctx, W, H, box, img, offsetX, offsetY, drawW, drawH, satFilte
 
             ctx.drawImage(textCanvas, 0, 0, W, H);
         } else if (extraType === 'white') {
-            ctx.save();
-            ctx.font = `900 ${extraSize}px ${FONT_STACK}`;
-            ctx.textBaseline = 'top';
-            ctx.textAlign = extraAlign;
-            ctx.fillStyle = '#ffffff';
-            ctx.fillText(extraText, x, y);
-            ctx.restore();
+            const c = pick(isExtraInverse);
+            c.save();
+            c.fillStyle = isExtraInverse ? '#ffffff' : extraColor;
+            c.font = `900 ${extraSize}px ${FONT_STACK}`;
+            c.textBaseline = 'top';
+            c.textAlign = extraAlign;
+            c.fillText(extraText, x, y);
+            c.restore();
         } else if (extraType === 'outline') {
-            ctx.save();
-            ctx.font = `900 ${extraSize}px ${FONT_STACK}`;
-            ctx.textBaseline = 'top';
-            ctx.textAlign = extraAlign;
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 1;
-            ctx.strokeText(extraText, x, y);
-            ctx.restore();
+            const c = pick(isExtraInverse);
+            c.save();
+            c.font = `900 ${extraSize}px ${FONT_STACK}`;
+            c.textBaseline = 'top';
+            c.textAlign = extraAlign;
+            c.strokeStyle = isExtraInverse ? '#ffffff' : extraColor;
+            c.lineWidth = 1;
+            c.strokeText(extraText, x, y);
+            c.restore();
         }
     }
 
@@ -1004,6 +1041,8 @@ function drawTexts(ctx, W, H, box, img, offsetX, offsetY, drawW, drawH, satFilte
     const copySize = parseInt(copySizeInput.value, 10);
     const copyAlign = copyAlignInput.value;
     const copyType = copyTypeInput.value;
+    const copyColor = copyColorInput ? copyColorInput.value : '#ffffff';
+    const isCopyInverse = copyInvertInput ? copyInvertInput.checked : false;
 
     if (copyText) {
         let cx = W / 2;
@@ -1023,7 +1062,7 @@ function drawTexts(ctx, W, H, box, img, offsetX, offsetY, drawW, drawH, satFilte
             tCtx.font = `600 ${copySize}px ${FONT_STACK}`;
             tCtx.textBaseline = 'top';
             tCtx.textAlign = copyAlign;
-            tCtx.fillStyle = '#ffffff';
+            tCtx.fillStyle = isCopyInverse ? '#ffffff' : copyColor;
             tCtx.fillText(copyText, cx, y);
 
             tCtx.globalCompositeOperation = 'source-in';
@@ -1032,29 +1071,31 @@ function drawTexts(ctx, W, H, box, img, offsetX, offsetY, drawW, drawH, satFilte
 
             ctx.drawImage(textCanvas, 0, 0, W, H);
         } else if (copyType === 'white') {
-            ctx.save();
-            ctx.font = `400 ${copySize}px ${FONT_STACK}`;
-            ctx.textBaseline = 'top';
-            ctx.textAlign = copyAlign;
-            ctx.fillStyle = '#ffffff';
-            ctx.fillText(copyText, cx, y);
-            ctx.restore();
+            const c = pick(isCopyInverse);
+            c.save();
+            c.fillStyle = isCopyInverse ? '#ffffff' : copyColor;
+            c.font = `400 ${copySize}px ${FONT_STACK}`;
+            c.textBaseline = 'top';
+            c.textAlign = copyAlign;
+            c.fillText(copyText, cx, y);
+            c.restore();
         } else if (copyType === 'outline') {
-            ctx.save();
-            ctx.font = `400 ${copySize}px ${FONT_STACK}`;
-            ctx.textBaseline = 'top';
-            ctx.textAlign = copyAlign;
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 0.3;
-            ctx.strokeText(copyText, cx, y);
-            ctx.restore();
+            const c = pick(isCopyInverse);
+            c.save();
+            c.font = `400 ${copySize}px ${FONT_STACK}`;
+            c.textBaseline = 'top';
+            c.textAlign = copyAlign;
+            c.strokeStyle = isCopyInverse ? '#ffffff' : copyColor;
+            c.lineWidth = 0.3;
+            c.strokeText(copyText, cx, y);
+            c.restore();
         }
     }
+
+    // 反転テキストを白黒で合成（他のテキストを描き終えた後に実行）
+    inv.apply();
 }
 
-// ------------------------------------------------------------
-// 描画スケジュール・初期化
-// ------------------------------------------------------------
 function scheduleRender() {
     if (renderScheduled) return;
     renderScheduled = true;
@@ -1080,9 +1121,6 @@ function doScreenRender() {
 function generateExportDataUrl() {
     const { width: containerW, height: containerH } = getContainerSize();
     const isLandscape = container.classList.contains('landscape');
-    // 書き出しは常に 1000x1593 (縦) or 1593x1000 (横) ちょうどにする。
-    // containerW/containerH は BASE_WIDTH を基準にした同じ比率なので、
-    // 目標の幅からスケール係数を逆算すれば高さもぴったり一致する。
     const targetWidth = isLandscape ? 1593 : 1000;
     const exportScale = targetWidth / containerW;
     const canvas = document.createElement('canvas');

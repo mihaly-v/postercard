@@ -91,11 +91,11 @@
                 </div>
             </div>
 
-            <!-- TEXT 01 (TITLE) -->
+            <!-- TEXT 01 (TITLE - FF14 JOB) + TEXT 02 (BODY - WORLD/DC) 共通パネル -->
             <div class="control-section glass">
-                <h3>// TEXT 01 (TITLE - FF14 JOB):</h3>
+                <h3>// TEXT 01 + 02 (TITLE - FF14 JOB / BODY - WORLD SELECT):</h3>
                 <div class="control-row">
-                    <div class="control-group" style="flex: 2;">
+                    <div class="control-group" style="flex: 1;">
                         <label>// JOB SELECT</label>
                         <select id="titleText">
                             <optgroup label="-- TANK --">
@@ -132,54 +132,9 @@
                         </select>
                     </div>
                     <div class="control-group" style="flex: 1;">
-                        <label>// POSITION</label>
-                        <select id="titlePosition">
-                            <option value="bottom" selected>BOTTOM (CLEAR / OUTSIDE)</option>
-                            <!-- <option value="inside-bottom">INSIDE BOTTOM</option> -->
-                            <option value="top">TOP (CLEAR / OUTSIDE)</option>
-                            <!-- <option value="inside-top">INSIDE TOP</option> -->
-                            <option value="left">LEFT</option>
-                            <option value="right">RIGHT</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="control-row">
-                    <div class="control-group">
-                        <label>// SIZE</label>
-                        <input type="number" id="titleSize" value="22" min="8" max="100">
-                    </div>
-                    <div class="control-group">
-                        <label>// ALIGN <span id="titleAlignNote" style="color:var(--text-sub); font-size:9px;"></span></label>
-                        <select id="titleAlign">
-                            <option value="left" selected>LEFT</option>
-                            <option value="center">CENTER</option>
-                            <option value="right">RIGHT</option>
-                        </select>
-                    </div>
-                    <div class="control-group" id="titleVAlignGroup">
-                        <label>// V-ALIGN (LEFT/RIGHT)</label>
-                        <select id="titleVAlign">
-                            <option value="top" selected>TOP</option>
-                            <option value="bottom">BOTTOM</option>
-                        </select>
-                    </div>
-                    <div class="control-group">
-                        <label>// COLOR</label>
-                        <input type="color" id="titleColor" value="#ffffff">
-                    </div>
-                </div>
-            </div>
-
-            <!-- TEXT 02 (BODY - WORLD/DC) -->
-            <div class="control-section glass">
-                <h3>// TEXT 02 (BODY - WORLD SELECT):</h3>
-                <div class="control-row">
-                    <div class="control-group" style="flex: 2;">
                         <label>// WORLD / DC</label>
                         <select id="bodyText">
                             <option value="Secret">Secret</option>
-                            
-                            <!-- === 日本 (Japan Data Center) === -->
                             <optgroup label="-- Elemental (JP) --">
                                 <option value="Elemental / Secret">Secret</option>
                                 <option value="Elemental / Aegis">Aegis</option>
@@ -224,133 +179,49 @@
                                 <option value="Meteor / Yojimbo">Yojimbo</option>
                                 <option value="Meteor / Zeromus">Zeromus</option>
                             </optgroup>
-
-                            <!-- === 北米 (North America Data Center) === -->
-                            <optgroup label="-- Aether (NA) --">
-                                <option value="Aether / Secret">Secret</option>
-                                <option value="Aether / Adamantoise">Adamantoise</option>
-                                <option value="Aether / Cactuar">Cactuar</option>
-                                <option value="Aether / Faerie">Faerie</option>
-                                <option value="Aether / Gilgamesh">Gilgamesh</option>
-                                <option value="Aether / Jenova">Jenova</option>
-                                <option value="Aether / Midgardsormr">Midgardsormr</option>
-                                <option value="Aether / Sargatanas">Sargatanas</option>
-                                <option value="Aether / Siren">Siren</option>
-                            </optgroup>
-                            <optgroup label="-- Crystal (NA) --">
-                                <option value="Crystal / Secret">Secret</option>
-                                <option value="Crystal / Balmung">Balmung</option>
-                                <option value="Crystal / Brynhildr">Brynhildr</option>
-                                <option value="Crystal / Coeurl">Coeurl</option>
-                                <option value="Crystal / Diabolos">Diabolos</option>
-                                <option value="Crystal / Goblin">Goblin</option>
-                                <option value="Crystal / Malboro">Malboro</option>
-                                <option value="Crystal / Mateus">Mateus</option>
-                                <option value="Crystal / Zalera">Zalera</option>
-                            </optgroup>
-                            <optgroup label="-- Dynamis (NA) --">
-                                <option value="Dynamis / Secret">Secret</option>
-                                <option value="Dynamis / Cuchulainn">Cuchulainn</option>
-                                <option value="Dynamis / Golem">Golem</option>
-                                <option value="Dynamis / Halicarnassus">Halicarnassus</option>
-                                <option value="Dynamis / Kraken">Kraken</option>
-                                <option value="Dynamis / Maduin">Maduin</option>
-                                <option value="Dynamis / Marilith">Marilith</option>
-                                <option value="Dynamis / Rafflesia">Rafflesia</option>
-                                <option value="Dynamis / Seraph">Seraph</option>
-                            </optgroup>
-                            <optgroup label="-- Primal (NA) --">
-                                <option value="Primal / Secret">Secret</option>
-                                <option value="Primal / Behemoth">Behemoth</option>
-                                <option value="Primal / Excalibur">Excalibur</option>
-                                <option value="Primal / Exodus">Exodus</option>
-                                <option value="Primal / Famfrit">Famfrit</option>
-                                <option value="Primal / Hyperion">Hyperion</option>
-                                <option value="Primal / Lamia">Lamia</option>
-                                <option value="Primal / Leviathan">Leviathan</option>
-                                <option value="Primal / Ultros">Ultros</option>
-                            </optgroup>
-
-                            <!-- === 欧州 (European Data Center) === -->
-                            <optgroup label="-- Chaos (EU) --">
-                                <option value="Chaos / Secret">Secret</option>
-                                <option value="Chaos / Cerberus">Cerberus</option>
-                                <option value="Chaos / Louisoix">Louisoix</option>
-                                <option value="Chaos / Moogle">Moogle</option>
-                                <option value="Chaos / Omega">Omega</option>
-                                <option value="Chaos / Phantom">Phantom</option>
-                                <option value="Chaos / Ragnarok">Ragnarok</option>
-                                <option value="Chaos / Sagittarius">Sagittarius</option>
-                                <option value="Chaos / Spriggan">Spriggan</option>
-                            </optgroup>
-                            <optgroup label="-- Light (EU) --">
-                                <option value="Light / Secret">Secret</option>
-                                <option value="Light / Alpha">Alpha</option>
-                                <option value="Light / Phoenix">Phoenix</option>
-                                <option value="Light / Raiden">Raiden</option>
-                                <option value="Light / Shiva">Shiva</option>
-                                <option value="Light / Twintania">Twintania</option>
-                                <option value="Light / Zodiark">Zodiark</option>
-                                <option value="Light / Lich">Lich</option>
-                                <option value="Light / Odin">Odin</option>
-                            </optgroup>
-
-                            <!-- === オセアニア (Oceanian Data Center) === -->
-                            <optgroup label="-- Materia (OC) --">
-                                <option value="Materia / Secret">Secret</option>
-                                <option value="Materia / Bismarck">Bismarck</option>
-                                <option value="Materia / Ravana">Ravana</option>
-                                <option value="Materia / Sephirot">Sephirot</option>
-                                <option value="Materia / Sophia">Sophia</option>
-                                <option value="Materia / Zurvan">Zurvan</option>
-                            </optgroup>
-
-                            <!-- === 韓国 (Korean Data Center) === -->
-                            <optgroup label="-- Korea (KR) --">
-                                <option value="Korea / Secret">Secret</option>
-                                <option value="Korea / Carbuncle">Carbuncle</option>
-                                <option value="Korea / Chocobo">Chocobo</option>
-                                <option value="Korea / Moogle">Moogle</option>
-                                <option value="Korea / Tonberry">Tonberry</option>
-                                <option value="Korea / Fenrir">Fenrir</option>
-                            </optgroup>
-                        </select>
-                    </div>
-                    <div class="control-group" style="flex: 1;">
-                        <label>// POSITION</label>
-                        <select id="bodyPosition">
-                            <option value="bottom" selected>BOTTOM (CLEAR / OUTSIDE)</option>
-                            <!-- <option value="inside-bottom">INSIDE BOTTOM</option> -->
-                            <option value="top">TOP (CLEAR / OUTSIDE)</option>
-                            <!-- <option value="inside-top">INSIDE TOP</option> -->
-                            <option value="left">LEFT</option>
-                            <option value="right">RIGHT</option>
                         </select>
                     </div>
                 </div>
                 <div class="control-row">
-                    <div class="control-group">
-                        <label>// SIZE</label>
-                        <input type="number" id="bodySize" value="11" min="6" max="50">
+                    <div class="control-group" style="flex: 2;">
+                        <label>// POSITION</label>
+                        <select id="textPosition">
+                            <option value="bottom" selected>BOTTOM (CLEAR / OUTSIDE)</option>
+                            <option value="top">TOP (CLEAR / OUTSIDE)</option>
+                            <option value="left">LEFT</option>
+                            <option value="right">RIGHT</option>
+                        </select>
                     </div>
+                    <div class="control-group" style="flex: 1;">
+                        <label>// SIZE</label>
+                        <input type="number" id="textSize" value="16" min="6" max="100">
+                    </div>
+                </div>
+                <div class="control-row">
                     <div class="control-group">
-                        <label>// ALIGN <span id="bodyAlignNote" style="color:var(--text-sub); font-size:9px;"></span></label>
-                        <select id="bodyAlign">
+                        <label>// ALIGN <span id="textAlignNote" style="color:var(--text-sub); font-size:9px;"></span></label>
+                        <select id="textAlign">
                             <option value="left" selected>LEFT</option>
                             <option value="center">CENTER</option>
                             <option value="right">RIGHT</option>
                         </select>
                     </div>
-                    <div class="control-group" id="bodyVAlignGroup">
+                    <div class="control-group" id="textVAlignGroup">
                         <label>// V-ALIGN (LEFT/RIGHT)</label>
-                        <select id="bodyVAlign">
+                        <select id="textVAlign">
                             <option value="top" selected>TOP</option>
                             <option value="bottom">BOTTOM</option>
                         </select>
                     </div>
                     <div class="control-group">
                         <label>// COLOR</label>
-                        <input type="color" id="bodyColor" value="#ffffff">
+                        <input type="color" id="textColor" value="#ffffff">
+                    </div>
+                    <div class="control-group" style="max-width: 80px; display: flex; flex-direction: column; justify-content: flex-end;">
+                        <label style="font-size: 9px; white-space: nowrap;">// 反転</label>
+                        <div style="height: 31px; display: flex; align-items: center; justify-content: center;">
+                            <input type="checkbox" id="textInvert" style="width: 16px; height: 16px; cursor: pointer;">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -400,12 +271,18 @@
                 </div>
                 <div class="control-row">
                     <div class="control-group">
-                        <label>// SIZE (MATCHES TEXT 02)</label>
-                        <input type="number" id="topHeaderSize" value="11" min="6" max="50">
+                        <label>// SIZE (MATCHES TEXT 01 + 02)</label>
+                        <input type="number" id="topHeaderSize" value="12" min="6" max="100">
                     </div>
                     <div class="control-group">
                         <label>// COLOR</label>
                         <input type="color" id="topHeaderColor" value="#ffffff">
+                    </div>
+                    <div class="control-group" style="max-width: 80px; display: flex; flex-direction: column; justify-content: flex-end;">
+                        <label style="font-size: 9px; white-space: nowrap;">// 反転</label>
+                        <div style="height: 31px; display: flex; align-items: center; justify-content: center;">
+                            <input type="checkbox" id="topHeaderInvert" style="width: 16px; height: 16px; cursor: pointer;">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -441,8 +318,14 @@
                         </select>
                     </div>
                     <div class="control-group">
-                        <label>// COLOR (UNUSED)</label>
+                        <label>// COLOR</label>
                         <input type="color" id="extraColor" value="#ffffff">
+                    </div>
+                    <div class="control-group" style="max-width: 80px; display: flex; flex-direction: column; justify-content: flex-end;">
+                        <label style="font-size: 9px; white-space: nowrap;">// 反転</label>
+                        <div style="height: 31px; display: flex; align-items: center; justify-content: center;">
+                            <input type="checkbox" id="extraInvert" style="width: 16px; height: 16px; cursor: pointer;">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -478,8 +361,14 @@
                         </select>
                     </div>
                     <div class="control-group">
-                        <label>// COLOR (UNUSED)</label>
+                        <label>// COLOR</label>
                         <input type="color" id="copyColor" value="#ffffff">
+                    </div>
+                    <div class="control-group" style="max-width: 80px; display: flex; flex-direction: column; justify-content: flex-end;">
+                        <label style="font-size: 9px; white-space: nowrap;">// 反転</label>
+                        <div style="height: 31px; display: flex; align-items: center; justify-content: center;">
+                            <input type="checkbox" id="copyInvert" style="width: 16px; height: 16px; cursor: pointer;">
+                        </div>
                     </div>
                 </div>
             </div>
