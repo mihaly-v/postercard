@@ -193,6 +193,16 @@ function buildFrostedTile() {
 }
 buildFrostedTile();
 
+const tilePatternCache = new Map(); // タイル画像ごとに CanvasPattern を使い回す
+function getTilePattern(ctx, tile) {
+    let pattern = tilePatternCache.get(tile);
+    if (!pattern) {
+        pattern = ctx.createPattern(tile, 'repeat');
+        tilePatternCache.set(tile, pattern);
+    }
+    return pattern;
+}
+
 function applySaturationContrast(imageData, saturation, contrast) {
     const data = imageData.data;
     const lumR = 0.3086, lumG = 0.6094, lumB = 0.0820;
@@ -228,8 +238,16 @@ function boxBlur(imageData, radius) {
     return imageData;
 }
 
+let blurTempBuffer = null; // ぼかしの一時バッファ（サイズが同じ限り使い回す）
+function getBlurTemp(length) {
+    if (!blurTempBuffer || blurTempBuffer.length !== length) {
+        blurTempBuffer = new Uint8ClampedArray(length);
+    }
+    return blurTempBuffer;
+}
+
 function boxBlurHorizontal(data, width, height, radius) {
-    const temp = new Uint8ClampedArray(data.length);
+    const temp = getBlurTemp(data.length);
     const size = radius * 2 + 1;
 
     for (let y = 0; y < height; y++) {
@@ -265,7 +283,7 @@ function boxBlurHorizontal(data, width, height, radius) {
 }
 
 function boxBlurVertical(data, width, height, radius) {
-    const temp = new Uint8ClampedArray(data.length);
+    const temp = getBlurTemp(data.length);
     const size = radius * 2 + 1;
 
     for (let x = 0; x < width; x++) {
@@ -737,12 +755,8 @@ function render(ctx, W, H) {
                     ctx.globalAlpha = grainValNum / 100;
                 }
 
-                const tileSize = tile.width;
-                for (let y = 0; y < H; y += tileSize) {
-                    for (let x = 0; x < W; x += tileSize) {
-                        ctx.drawImage(tile, x, y);
-                    }
-                }
+                ctx.fillStyle = getTilePattern(ctx, tile);
+                ctx.fillRect(0, 0, W, H);
                 ctx.restore();
             }
         }
@@ -1190,8 +1204,14 @@ function scheduleRender() {
 function doScreenRender() {
     const { width: containerW, height: containerH } = getContainerSize();
     const dpr = window.devicePixelRatio || 1;
-    mainCanvas.width = containerW * dpr;
-    mainCanvas.height = containerH * dpr;
+    // canvas.width/height への代入は同じ値でもバックバッファを再確保させるため、
+    // サイズが実際に変わったときだけ行う（毎フレームの無駄な再確保を避ける）
+    const targetW = Math.floor(containerW * dpr);
+    const targetH = Math.floor(containerH * dpr);
+    if (mainCanvas.width !== targetW || mainCanvas.height !== targetH) {
+        mainCanvas.width = targetW;
+        mainCanvas.height = targetH;
+    }
     mainCanvas.style.width = '100%';
     mainCanvas.style.height = '100%';
 
