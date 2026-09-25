@@ -867,35 +867,71 @@ function createInverseLayer(baseCtx, box) {
             if (!layerCtx) return;
             const w = baseCtx.canvas.width;
             const h = baseCtx.canvas.height;
-            const base = baseCtx.getImageData(0, 0, w, h);
-            const mask = layerCtx.getImageData(0, 0, w, h);
+
+            // 文字が実際に描かれた範囲（バウンディングボックス）だけを処理する。
+            // ここだけはキャンバス全体を1回読む必要があるが、alphaだけを見る軽い1パスなので安い。
+            // 以前はここを飛ばして毎フレーム「キャンバス全体」に対して輝度計算とボックスブラーを
+            // かけていたため、反転をONにすると常に重くなっていた。
+            const fullMask = layerCtx.getImageData(0, 0, w, h);
+            const fm = fullMask.data;
+            let minX = w, minY = h, maxX = -1, maxY = -1;
+            for (let y = 0; y < h; y++) {
+                const rowOff = y * w * 4;
+                for (let x = 0; x < w; x++) {
+                    if (fm[rowOff + x * 4 + 3] !== 0) {
+                        if (x < minX) minX = x;
+                        if (x > maxX) maxX = x;
+                        if (y < minY) minY = y;
+                        if (y > maxY) maxY = y;
+                    }
+                }
+            }
+            if (maxX < 0) return; // 反転テキストが何も描かれていない
+
+            const t = baseCtx.getTransform();
+            const scale = t.a || 1;
+            // ドラッグ中（isInteracting）は近傍平均のボックスブラーを省略し、
+            // ピクセルそのものの輝度で軽量に判定する。離した瞬間に厳密な計算へ戻る。
+            const useRegionAware = INVERSE_TEXT_MODE === 'binary' && !isInteracting;
+            const pad = useRegionAware ? Math.max(1, Math.round(4 * scale)) : 0;
+
+            const bx = Math.max(0, minX - pad);
+            const by = Math.max(0, minY - pad);
+            const bw = Math.min(w, maxX + 1 + pad) - bx;
+            const bh = Math.min(h, maxY + 1 + pad) - by;
+
+            const base = baseCtx.getImageData(bx, by, bw, bh);
+            const mask = layerCtx.getImageData(bx, by, bw, bh);
             const b = base.data;
             const m = mask.data;
 
             let lum = null;
-            if (INVERSE_TEXT_MODE === 'binary') {
-                const t = baseCtx.getTransform();
+            if (useRegionAware) {
                 const rect = {
-                    left: box.left * t.a + t.e,
-                    right: (box.left + box.width) * t.a + t.e,
-                    top: box.top * t.d + t.f,
-                    bottom: (box.top + box.height) * t.d + t.f
+                    left: box.left * t.a + t.e - bx,
+                    right: (box.left + box.width) * t.a + t.e - bx,
+                    top: box.top * t.d + t.f - by,
+                    bottom: (box.top + box.height) * t.d + t.f - by
                 };
-                lum = regionAwareLuminance(b, w, h, rect, Math.max(1, Math.round(4 * (t.a || 1))));
+                lum = regionAwareLuminance(b, bw, bh, rect, pad);
             }
 
             for (let i = 0; i < m.length; i += 4) {
                 const a = m[i + 3];
                 if (a === 0) continue;
-                const target = lum
-                    ? (lum[i >> 2] >= 128 ? 0 : 255)
-                    : 255 - (0.299 * b[i] + 0.587 * b[i + 1] + 0.114 * b[i + 2]);
-                const t = a / 255;
-                b[i]     = b[i]     * (1 - t) + target * t;
-                b[i + 1] = b[i + 1] * (1 - t) + target * t;
-                b[i + 2] = b[i + 2] * (1 - t) + target * t;
+                let target;
+                if (INVERSE_TEXT_MODE === 'binary') {
+                    const l = lum ? lum[i >> 2] : (0.299 * b[i] + 0.587 * b[i + 1] + 0.114 * b[i + 2]);
+                    target = l >= 128 ? 0 : 255;
+                } else {
+                    target = 255 - (0.299 * b[i] + 0.587 * b[i + 1] + 0.114 * b[i + 2]);
+                }
+                const tt = a / 255;
+                b[i]     = b[i]     * (1 - tt) + target * tt;
+                b[i + 1] = b[i + 1] * (1 - tt) + target * tt;
+                b[i + 2] = b[i + 2] * (1 - tt) + target * tt;
             }
-            baseCtx.putImageData(base, 0, 0);
+            baseCtx.putImageData(base, bx, by);
         }
     };
 }
