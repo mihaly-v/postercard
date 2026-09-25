@@ -21,22 +21,21 @@ const bgSaturationInput = document.getElementById('bgSaturation');
 const satVal = document.getElementById('satVal');
 const insideSaturationInput = document.getElementById('insideSaturation');
 const insideSatVal = document.getElementById('insideSatVal');
-const borderWidthInput = document.getElementById('borderWidth');
+// const borderWidthInput = document.getElementById('borderWidth');
 const borderColorInput = document.getElementById('borderColor');
 const showCrossInput = document.getElementById('showCross');
 
-// 各反転チェックボックスの取得
+// 各反転セレクトボックスの取得（チェックボックスからセレクトボックスに変更）
 const textInvertInput = document.getElementById('textInvert'); // TEXT 01 / 02 共通
 const titleInvertInput = textInvertInput;
 const bodyInvertInput = textInvertInput;
 const topHeaderInvertInput = document.getElementById('topHeaderInvert');
 const extraInvertInput = document.getElementById('extraInvert');
-const copyInvertInput = document.getElementById('copyInvert');
+const copyInvertInput = extraInvertInput; // TEXT 04 は TEXT 03 と反転設定を共有
 
 const titleTextInput = document.getElementById('titleText');
 
 // TEXT 01 / 02 は POSITION・SIZE・ALIGN・V-ALIGN・COLOR・反転を共通の1セットで持つ。
-// 描画側は title* / body* のまま読めるように、同じ要素を両方の名前で参照させている。
 const textPositionInput = document.getElementById('textPosition');
 const textSizeInput = document.getElementById('textSize');
 const textAlignInput = document.getElementById('textAlign');
@@ -71,11 +70,12 @@ const extraSizeInput = document.getElementById('extraSize');
 const extraAlignInput = document.getElementById('extraAlign');
 const extraColorInput = document.getElementById('extraColor');
 
-const copyTextInput = document.getElementById('copyText');
-const copyTypeInput = document.getElementById('copyType');
-const copySizeInput = document.getElementById('copySize');
-const copyAlignInput = document.getElementById('copyAlign');
-const copyColorInput = document.getElementById('copyColor');
+// TEXT 04 (COPYRIGHT) は固定値 ＆ TEXT 03 の設定を共有
+const copyTextInput = { value: "©SQUARE ENIX" };
+const copySizeInput = { value: 10 };
+const copyTypeInput = extraTypeInput;
+const copyAlignInput = extraAlignInput;
+const copyColorInput = extraColorInput;
 
 const FONT_STACK = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
 const textureTypeInput = document.getElementById('textureType');
@@ -105,6 +105,7 @@ let boxHeightRatio = 320 / 600;
 let isDraggingBox = false;
 let isResizingBox = false;
 let isPanningImage = false;
+let isInteracting = false; 
 let currentHandle = null;
 let startX, startY, startLeft, startTop, startWidth, startHeight;
 let panStartX, panStartY;
@@ -298,21 +299,39 @@ function boxBlurVertical(data, width, height, radius) {
     data.set(temp);
 }
 
+let processedBgCache = null;
+
 function makeProcessedBackground(img, W, H, offsetX, offsetY, drawW, drawH, saturationPct, contrastPct, blurPx) {
+    const key = [img.src, W, H, offsetX, offsetY, drawW, drawH, saturationPct, contrastPct, blurPx, isInteracting].join('|');
+    if (processedBgCache && processedBgCache.key === key) {
+        return processedBgCache.canvas;
+    }
+
     const off = document.createElement('canvas');
     off.width = W;
     off.height = H;
     const offCtx = off.getContext('2d');
-    offCtx.drawImage(img, offsetX, offsetY, drawW, drawH);
 
     const saturation = saturationPct / 100;
     const contrast = contrastPct / 100;
-    if (saturation !== 1 || contrast !== 1 || blurPx > 0) {
-        const imageData = offCtx.getImageData(0, 0, W, H);
-        applySaturationContrast(imageData, saturation, contrast);
-        if (blurPx > 0) boxBlur(imageData, Math.round(blurPx));
-        offCtx.putImageData(imageData, 0, 0);
+
+    if (isInteracting) {
+        const parts = [`saturate(${saturationPct}%)`, `contrast(${contrastPct}%)`];
+        if (blurPx > 0) parts.push(`blur(${blurPx}px)`);
+        offCtx.filter = parts.join(' ');
+        offCtx.drawImage(img, offsetX, offsetY, drawW, drawH);
+        offCtx.filter = 'none';
+    } else {
+        offCtx.drawImage(img, offsetX, offsetY, drawW, drawH);
+        if (saturation !== 1 || contrast !== 1 || blurPx > 0) {
+            const imageData = offCtx.getImageData(0, 0, W, H);
+            applySaturationContrast(imageData, saturation, contrast);
+            if (blurPx > 0) boxBlur(imageData, Math.round(blurPx));
+            offCtx.putImageData(imageData, 0, 0);
+        }
     }
+
+    processedBgCache = { key, canvas: off };
     return off;
 }
 
@@ -374,7 +393,6 @@ function changeResolution() {
 resolutionSelect.addEventListener('change', changeResolution);
 
 function updateFieldStates() {
-    // TEXT 01 / 02 共通：LEFT / RIGHT のときは ALIGN を固定し、V-ALIGN を表示する
     if (textPositionInput.value === 'left') {
         textAlignInput.value = 'right';
         textAlignInput.disabled = true;
@@ -392,11 +410,6 @@ function updateFieldStates() {
     }
 }
 
-textSizeInput.addEventListener('input', () => {
-    topHeaderSizeInput.value = textSizeInput.value;
-    onControlsChanged();
-});
-
 function onControlsChanged() {
     updateFieldStates();
     blurVal.textContent = blurIntensityInput.value;
@@ -406,15 +419,19 @@ function onControlsChanged() {
     scheduleRender();
 }
 
+[blurIntensityInput, grainIntensityInput, bgSaturationInput, insideSaturationInput].forEach(el => {
+    el.addEventListener('input', () => { isInteracting = true; });
+    el.addEventListener('change', () => { isInteracting = false; });
+});
+
 [
     blurIntensityInput, grainIntensityInput, bgSaturationInput, insideSaturationInput, textureTypeInput,
-    borderWidthInput, borderColorInput, showCrossInput,
-    textInvertInput, topHeaderInvertInput, extraInvertInput, copyInvertInput,
+    borderColorInput, showCrossInput,
+    textInvertInput, topHeaderInvertInput, extraInvertInput,
     titleTextInput, bodyTextInput,
     textPositionInput, textSizeInput, textAlignInput, textVAlignInput, textColorInput,
     topHeaderLeftInput, topHeaderCenterInput, topHeaderRightInput, topHeaderSizeInput, topHeaderColorInput,
-    extraTextInput, extraSizeInput, extraAlignInput, extraTypeInput, extraColorInput,
-    copyTextInput, copyTypeInput, copySizeInput, copyAlignInput, copyColorInput
+    extraTextInput, extraSizeInput, extraAlignInput, extraTypeInput, extraColorInput
 ].forEach(el => {
     if (el) {
         el.addEventListener('input', onControlsChanged);
@@ -433,7 +450,8 @@ container.addEventListener('wheel', (e) => {
     let newScale = imgScale;
     if (e.deltaY < 0) newScale *= zoomFactor;
     else newScale /= zoomFactor;
-    newScale = Math.max(0.1, Math.min(newScale, 10));
+    const minScale = 1.0;
+    newScale = Math.max(minScale, Math.min(newScale, 10));
 
     imgPosX = mouseX - (mouseX - imgPosX) * (newScale / imgScale);
     imgPosY = mouseY - (mouseY - imgPosY) * (newScale / imgScale);
@@ -445,6 +463,7 @@ container.addEventListener('wheel', (e) => {
 container.addEventListener('mousedown', (e) => {
     if (e.target === cropBox || e.target.classList.contains('handle')) return;
     isPanningImage = true;
+    isInteracting = true;
     const { width: containerW, height: containerH } = getContainerSize();
     const rect = container.getBoundingClientRect();
     const scaleX = containerW / rect.width;
@@ -466,6 +485,7 @@ container.addEventListener('touchstart', (e) => {
         e.preventDefault();
     } else if (e.touches.length === 1) {
         isPanningImage = true;
+        isInteracting = true;
         const { width: containerW, height: containerH } = getContainerSize();
         const rect = container.getBoundingClientRect();
         const scaleX = containerW / rect.width;
@@ -614,6 +634,7 @@ function endInteraction() {
     isPanningImage = false;
     currentHandle = null;
     initialPinchDistance = null;
+    if (isInteracting) { isInteracting = false; scheduleRender(); }
 }
 
 document.addEventListener('mouseup', endInteraction);
@@ -630,19 +651,32 @@ function computeImageDrawRect(img, W, H) {
     const containerAspect = W / H;
     const imgAspect = naturalWidth / naturalHeight;
 
-    let drawW, drawH, offsetX, offsetY;
+    let baseW, baseH;
     if (imgAspect > containerAspect) {
-        drawW = W * imgScale;
-        drawH = (W / imgAspect) * imgScale;
-        offsetX = imgPosX;
-        offsetY = imgPosY + (H - (W / imgAspect)) * imgScale / 2;
+        baseH = H;
+        baseW = H * imgAspect;
     } else {
-        drawW = (H * imgAspect) * imgScale;
-        drawH = H * imgScale;
-        offsetX = imgPosX + (W - (H * imgAspect)) * imgScale / 2;
-        offsetY = imgPosY;
+        baseW = W;
+        baseH = W / imgAspect;
     }
-    return { drawW, drawH, offsetX, offsetY };
+
+    const minScale = 1.0;
+    if (imgScale < minScale) {
+        imgScale = minScale;
+    }
+
+    const drawW = baseW * imgScale;
+    const drawH = baseH * imgScale;
+
+    const minX = W - drawW;
+    const maxX = 0;
+    const minY = H - drawH;
+    const maxY = 0;
+
+    imgPosX = Math.max(minX, Math.min(maxX, imgPosX));
+    imgPosY = Math.max(minY, Math.min(maxY, imgPosY));
+
+    return { drawW, drawH, offsetX: imgPosX, offsetY: imgPosY };
 }
 
 // ------------------------------------------------------------
@@ -658,7 +692,7 @@ function render(ctx, W, H) {
     const insideSatValNum = parseInt(insideSaturationInput.value, 10);
     const blurPx = parseInt(blurIntensityInput.value, 10);
     const grainValNum = parseInt(grainIntensityInput.value, 10);
-    const borderWidth = parseInt(borderWidthInput.value, 10);
+    const borderWidth = 1;
     const borderColor = borderColorInput.value;
     const showCross = showCrossInput.value === 'show';
 
@@ -722,7 +756,7 @@ function render(ctx, W, H) {
         ctx.filter = 'none';
 
         if (showCross) {
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.strokeStyle = borderColor;
             ctx.lineWidth = 1;
             const cx = box.left + box.width / 2;
             const cy = box.top + box.height / 2;
@@ -754,16 +788,57 @@ function render(ctx, W, H) {
 
 // ------------------------------------------------------------
 // 反転テキスト（白黒）
-// 文字を別レイヤーに描き、下地の輝度から求めた白黒で合成する。
-// 'binary' : 下地が明るければ #000、暗ければ #fff（完全な2値）
-// 'gray'   : 下地の明るさを反転したグレー（difference のモノクロ版）
 // ------------------------------------------------------------
 const INVERSE_TEXT_MODE = 'binary';
 
-function createInverseLayer(baseCtx) {
+function boxSumFloat(arr, w, h, r) {
+    const rowP = new Float64Array(w + 1);
+    for (let y = 0; y < h; y++) {
+        const o = y * w;
+        for (let x = 0; x < w; x++) rowP[x + 1] = rowP[x] + arr[o + x];
+        for (let x = 0; x < w; x++) {
+            arr[o + x] = rowP[Math.min(w, x + r + 1)] - rowP[Math.max(0, x - r)];
+        }
+    }
+    const colP = new Float64Array(h + 1);
+    for (let x = 0; x < w; x++) {
+        for (let y = 0; y < h; y++) colP[y + 1] = colP[y] + arr[y * w + x];
+        for (let y = 0; y < h; y++) {
+            arr[y * w + x] = colP[Math.min(h, y + r + 1)] - colP[Math.max(0, y - r)];
+        }
+    }
+}
+
+function regionAwareLuminance(data, w, h, rect, radius) {
+    const n = w * h;
+    const lum = new Float32Array(n);
+    const outside = new Float32Array(n);
+    for (let y = 0; y < h; y++) {
+        const inY = (y + 0.5) >= rect.top && (y + 0.5) < rect.bottom;
+        for (let x = 0; x < w; x++) {
+            const p = y * w + x;
+            const i = p * 4;
+            lum[p] = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+            const inside = inY && (x + 0.5) >= rect.left && (x + 0.5) < rect.right;
+            outside[p] = inside ? 0 : 1;
+        }
+    }
+
+    const num = new Float32Array(n);
+    const den = new Float32Array(outside);
+    for (let p = 0; p < n; p++) num[p] = lum[p] * outside[p];
+    boxSumFloat(num, w, h, radius);
+    boxSumFloat(den, w, h, radius);
+
+    for (let p = 0; p < n; p++) {
+        if (outside[p] === 1 && den[p] > 0) lum[p] = num[p] / den[p];
+    }
+    return lum;
+}
+
+function createInverseLayer(baseCtx, box) {
     let layerCtx = null;
     return {
-        // 反転テキストが実際に描かれたときだけレイヤーを作る
         get ctx() {
             if (!layerCtx) {
                 const layer = document.createElement('canvas');
@@ -783,25 +858,23 @@ function createInverseLayer(baseCtx) {
             const b = base.data;
             const m = mask.data;
 
-            // binary：テクスチャのノイズで文字の中が白黒まだらにならないよう、
-            // 白黒の判定には周囲を平均化した輝度を使う
-            let smoothLum = null;
+            let lum = null;
             if (INVERSE_TEXT_MODE === 'binary') {
-                const scale = baseCtx.getTransform().a || 1;
-                const lumImg = new ImageData(new Uint8ClampedArray(b), w, h);
-                const d = lumImg.data;
-                for (let i = 0; i < d.length; i += 4) {
-                    d[i] = d[i + 1] = d[i + 2] = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
-                }
-                boxBlur(lumImg, Math.max(1, Math.round(6 * scale)));
-                smoothLum = lumImg.data;
+                const t = baseCtx.getTransform();
+                const rect = {
+                    left: box.left * t.a + t.e,
+                    right: (box.left + box.width) * t.a + t.e,
+                    top: box.top * t.d + t.f,
+                    bottom: (box.top + box.height) * t.d + t.f
+                };
+                lum = regionAwareLuminance(b, w, h, rect, Math.max(1, Math.round(4 * (t.a || 1))));
             }
 
             for (let i = 0; i < m.length; i += 4) {
                 const a = m[i + 3];
                 if (a === 0) continue;
-                const target = smoothLum
-                    ? (smoothLum[i] >= 128 ? 0 : 255)
+                const target = lum
+                    ? (lum[i >> 2] >= 128 ? 0 : 255)
                     : 255 - (0.299 * b[i] + 0.587 * b[i + 1] + 0.114 * b[i + 2]);
                 const t = a / 255;
                 b[i]     = b[i]     * (1 - t) + target * t;
@@ -817,7 +890,7 @@ function drawTexts(ctx, W, H, box, img, offsetX, offsetY, drawW, drawH, satFilte
     const tPos = titlePositionInput.value;
     const bPos = bodyPositionInput.value;
     const gap = 12;
-    const inv = createInverseLayer(ctx);
+    const inv = createInverseLayer(ctx, box);
     const pick = (isInverse) => (isInverse ? inv.ctx : ctx);
 
     const titleText = titleTextInput.value;
@@ -825,14 +898,16 @@ function drawTexts(ctx, W, H, box, img, offsetX, offsetY, drawW, drawH, satFilte
     const titleAlign = titleAlignInput.value;
     const titleVAlign = titleVAlignInput.value;
     const titleColor = titleColorInput.value;
-    const isTitleInverse = titleInvertInput ? titleInvertInput.checked : false;
+    // セレクトボックスの選択値が 'on' の場合に true に設定
+    const isTitleInverse = titleInvertInput ? titleInvertInput.value === 'on' : false;
 
     const bodyText = bodyTextInput.value;
-    const bodySize = parseInt(bodySizeInput.value, 10);
+    const bodySize = Math.round((parseInt(bodySizeInput.value, 10) || 16) * 0.5);
     const bodyAlign = bodyAlignInput.value;
     const bodyVAlign = bodyVAlignInput.value;
     const bodyColor = bodyColorInput.value;
-    const isBodyInverse = bodyInvertInput ? bodyInvertInput.checked : false;
+    // セレクトボックスの選択値が 'on' の場合に true に設定
+    const isBodyInverse = bodyInvertInput ? bodyInvertInput.value === 'on' : false;
 
     let titleH = 0;
     let bodyH = 0;
@@ -892,35 +967,35 @@ function drawTexts(ctx, W, H, box, img, offsetX, offsetY, drawW, drawH, satFilte
         if (tPos === 'bottom') {
             const startY1 = box.top + box.height + gap;
             renderBlock(titleText, tPos, titleSize, titleAlign, titleVAlign, titleColor, true, startY1, isTitleInverse);
-            const startY2 = startY1 + titleH + 8;
+            const startY2 = startY1 + titleH + 0;
             renderBlock(bodyText, bPos, bodySize, bodyAlign, bodyVAlign, bodyColor, false, startY2, isBodyInverse);
         } else if (tPos === 'top') {
             const totalH = titleH + 8 + bodyH;
             const startY1 = box.top - gap - totalH;
             renderBlock(titleText, tPos, titleSize, titleAlign, titleVAlign, titleColor, true, startY1, isTitleInverse);
-            const startY2 = startY1 + titleH + 8;
+            const startY2 = startY1 + titleH + 0;
             renderBlock(bodyText, bPos, bodySize, bodyAlign, bodyVAlign, bodyColor, false, startY2, isBodyInverse);
         } else if (tPos === 'inside-top') {
             const padding = 16;
             const startY1 = padding;
             renderBlock(titleText, tPos, titleSize, titleAlign, titleVAlign, titleColor, true, startY1, isTitleInverse);
-            const startY2 = startY1 + titleH + 8;
+            const startY2 = startY1 + titleH + 0;
             renderBlock(bodyText, bPos, bodySize, bodyAlign, bodyVAlign, bodyColor, false, startY2, isBodyInverse);
         } else if (tPos === 'inside-bottom') {
             const padding = 16;
             const totalH = titleH + 8 + bodyH;
             const startY1 = H - padding - totalH;
             renderBlock(titleText, tPos, titleSize, titleAlign, titleVAlign, titleColor, true, startY1, isTitleInverse);
-            const startY2 = startY1 + titleH + 8;
+            const startY2 = startY1 + titleH + 0;
             renderBlock(bodyText, bPos, bodySize, bodyAlign, bodyVAlign, bodyColor, false, startY2, isBodyInverse);
         } else if (tPos === 'left' || tPos === 'right') {
             let startY1 = box.top;
             if (titleVAlign === 'bottom') {
-                const totalH = titleH + 8 + bodyH;
+                const totalH = titleH + 0 + bodyH;
                 startY1 = box.top + box.height - totalH;
             }
             renderBlock(titleText, tPos, titleSize, titleAlign, titleVAlign, titleColor, true, startY1, isTitleInverse);
-            const startY2 = startY1 + titleH + 8;
+            const startY2 = startY1 + titleH + 0;
             renderBlock(bodyText, bPos, bodySize, bodyAlign, bodyVAlign, bodyColor, false, startY2, isBodyInverse);
         }
     } else {
@@ -952,9 +1027,10 @@ function drawTexts(ctx, W, H, box, img, offsetX, offsetY, drawW, drawH, satFilte
     const tLeftText = topHeaderLeftInput ? topHeaderLeftInput.value : '';
     const tCenterText = topHeaderCenterInput ? topHeaderCenterInput.value : '';
     const tRightText = topHeaderRightInput ? topHeaderRightInput.value : '';
-    const tHeaderSize = topHeaderSizeInput ? (parseInt(topHeaderSizeInput.value, 10) || parseInt(bodySizeInput.value, 10)) : 11;
+    const tHeaderSize = topHeaderSizeInput ? (parseInt(topHeaderSizeInput.value, 10) || 12) : 12;
     const tHeaderColor = topHeaderColorInput ? topHeaderColorInput.value : '#ffffff';
-    const isTopHeaderInverse = topHeaderInvertInput ? topHeaderInvertInput.checked : false;
+    // セレクトボックスの選択値が 'on' の場合に true に設定
+    const isTopHeaderInverse = topHeaderInvertInput ? topHeaderInvertInput.value === 'on' : false;
 
     if (tLeftText || tCenterText || tRightText) {
         const c = pick(isTopHeaderInverse);
@@ -985,14 +1061,15 @@ function drawTexts(ctx, W, H, box, img, offsetX, offsetY, drawW, drawH, satFilte
     const extraAlign = extraAlignInput.value;
     const extraType = extraTypeInput.value;
     const extraColor = extraColorInput ? extraColorInput.value : '#ffffff';
-    const isExtraInverse = extraInvertInput ? extraInvertInput.checked : false;
+    // セレクトボックスの選択値が 'on' の場合に true に設定
+    const isExtraInverse = extraInvertInput ? extraInvertInput.value === 'on' : false;
 
     if (extraText) {
         let x = W / 2;
         if (extraAlign === 'left') x = padding;
         if (extraAlign === 'right') x = W - padding;
 
-        const copySizeTemp = parseInt(copySizeInput.value, 10) || 12;
+        const copySizeTemp = parseInt(copySizeInput.value, 10) || 10;
         const y = H - padding - copySizeTemp - 15 - extraSize;
 
         if (extraType === 'reveal' && img) {
@@ -1036,13 +1113,14 @@ function drawTexts(ctx, W, H, box, img, offsetX, offsetY, drawW, drawH, satFilte
         }
     }
 
-    // TEXT 04
+    // TEXT 04 (Copyright: 固定「©SQUARE ENIX」「10px」, 設定はTEXT03と共有)
     const copyText = copyTextInput.value;
-    const copySize = parseInt(copySizeInput.value, 10);
+    const copySize = copySizeInput.value;
     const copyAlign = copyAlignInput.value;
     const copyType = copyTypeInput.value;
-    const copyColor = copyColorInput ? copyColorInput.value : '#ffffff';
-    const isCopyInverse = copyInvertInput ? copyInvertInput.checked : false;
+    const copyColor = extraColorInput ? extraColorInput.value : '#ffffff';
+    // セレクトボックスの選択値が 'on' の場合に true に設定
+    const isCopyInverse = extraInvertInput ? extraInvertInput.value === 'on' : false;
 
     if (copyText) {
         let cx = W / 2;
@@ -1092,7 +1170,6 @@ function drawTexts(ctx, W, H, box, img, offsetX, offsetY, drawW, drawH, satFilte
         }
     }
 
-    // 反転テキストを白黒で合成（他のテキストを描き終えた後に実行）
     inv.apply();
 }
 
@@ -1187,4 +1264,23 @@ window.addEventListener('load', () => {
     changeResolution();
     onControlsChanged();
     scheduleRender();
+});
+
+// ページ内にあるすべてのスライダーを取得
+const rangeInputs = document.querySelectorAll('input[type="range"]');
+
+function updateSliderBackground(input) {
+    const min = parseFloat(input.min) || 0;
+    const max = parseFloat(input.max) || 100;
+    const val = parseFloat(input.value);
+    
+    const percentage = ((val - min) / (max - min)) * 100;
+    input.style.background = `linear-gradient(to right, #ffffff ${percentage}%, rgba(255, 255, 255, 0.3) ${percentage}%)`;
+}
+
+rangeInputs.forEach(input => {
+    updateSliderBackground(input);
+    input.addEventListener('input', (e) => {
+        updateSliderBackground(e.target);
+    });
 });
