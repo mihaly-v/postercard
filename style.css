@@ -122,6 +122,9 @@ body {
     width: 100%;
     outline: none;
 }
+.control-group input[type="color"] {
+    padding: 6px 12px;
+}
 
 .btn {
     background: rgba(255, 255, 255, 0.15);
@@ -396,18 +399,30 @@ body {
 
 /* スライダー調整 */
 
+/* スライダー全体のベース設定 */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 6px;
-  border-radius: 3px;
-  background: rgba(255, 255, 255, 0.3); /* 右側（未選択側）の色：半透明の白 */
+  background: transparent;
   outline: none;
   cursor: pointer;
+  /* 上下にパディングを持たせてヒットエリアを広げる（つまみがなくても押しやすくする） */
+  padding: 12px 0;
+  touch-action: manipulation;
 }
 
-/* Chrome, Safari, Edge 向けのつまみを消す設定 */
+/* Chrome, Safari, Edge 向けのバー（トラック）背景設定 */
+input[type="range"]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  /* ここでバーのベースとなる白を指定（必要に応じて不透明度を変更してください） */
+  background: rgba(255, 255, 255, 0);
+  border: none;
+}
+
+/* Chrome, Safari, Edge 向けのつまみを完全に消す設定 */
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
@@ -416,6 +431,15 @@ input[type="range"]::-webkit-slider-thumb {
   background: transparent;
   border: none;
   box-shadow: none;
+}
+
+/* Firefox 向けのバー背景設定 */
+input[type="range"]::-moz-range-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.5);
+  border: none;
 }
 
 /* Firefox 向けのつまみを消す設定 */

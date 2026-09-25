@@ -14,22 +14,20 @@
             <div class="control-section glass">
                 <h3>FILE:</h3>
                 <div class="control-row">
-                    <div class="control-group">
+                    <div class="control-group"  style="flex: 1;">
                         <label>Card Type</label>
                         <select id="resolutionSelect">
                             <option value="1000x1593" selected>PORTRAIT (1000×1593)</option>
                             <option value="1593x1000">LANDSCAPE (1593×1000)</option>
                         </select>
                     </div>
-                </div>
-                <div class="control-row">
-                    <div class="control-group">
+                    <div class="control-group"  style="flex: 1;">
                         <label>Upload Image</label>
                         <input type="file" id="imageLoader" accept="image/*">
                     </div>
                 </div>
-                <div class="control-row ">
-                    <div class="control-group ">
+                <div class="control-row">
+                    <div class="control-group">
                         <label>&nbsp;</label>
                         <button class="btn" id="saveImgBtn" style="background: rgba(255,255,255,0.25); font-weight: bold;">DOWNLOAD IMAGE FILE</button>
                     </div>
@@ -39,7 +37,7 @@
             <div class="control-section glass">
                 <h3>STYLE:</h3>
                 <div class="control-row">
-                    <div class="control-group">
+                    <div class="control-group" style="flex: 1;">
                         <label>Blur Intensity: <span id="blurVal">14</span>px</label>
                         <input type="range" id="blurIntensity" min="0" max="35" value="14">
                     </div>
@@ -49,14 +47,14 @@
                     </div>
                 </div>
                 <div class="control-row">
-                    <div class="control-group">
+                    <div class="control-group" style="flex: 1;">
                         <label>Texture</label>
                         <select id="textureType">
                             <option value="frosted" selected>FROSTED GLASS</option>
                             <option value="grain">FILM GRAIN</option>
                         </select>
                     </div>
-                    <div class="control-group">
+                    <div class="control-group" style="flex: 1;">
                         <label>Texture intensity: <span id="grainVal">100</span>%</label>
                         <input type="range" id="grainIntensity" min="0" max="100" value="100">
                     </div>
@@ -64,21 +62,21 @@
                 </div>
                 
                 <div class="control-row">
-                    <div class="control-group">
+                    <div class="control-group" style="flex: 1;">
                         <label>Inside Saturation: <span id="insideSatVal">100</span>%</label>
                         <input type="range" id="insideSaturation" min="0" max="100" value="100">
                     </div>
-                    <div class="control-group">
+                    <div class="control-group" style="flex: 1;">
                         <label>Outside Saturation: <span id="satVal">100</span>%</label>
                         <input type="range" id="bgSaturation" min="0" max="100" value="100">
                     </div>
                 </div>
                 <div class="control-row">
-                    <div class="control-group">
+                    <div class="control-group" style="flex: 1;">
                         <label>Frame Color</label>
                         <input type="color" id="borderColor" value="#ffffff">
                     </div>
-                    <div class="control-group">
+                    <div class="control-group" style="flex: 1;">
                         <label>Crosshair</label>
                         <select id="showCross">
                             <option value="none">OFF</option>
@@ -93,7 +91,7 @@
             <div class="control-section glass">
                 <h3>Top:</h3>
                 <div class="control-row">
-                    <div class="control-group">
+                    <div class="control-group" style="flex: 1;">
                         <label>Playstyle</label>
                         <select id="topHeaderLeft">
                             <option value="STORY" selected>STORY</option>
@@ -107,7 +105,7 @@
                             <option value="RAID">RAID</option>
                         </select>
                     </div>
-                    <div class="control-group">
+                    <div class="control-group" style="flex: 1;">
                         <label>MSQ</label>
                         <select id="topHeaderCenter">
                             <option value="A REALM REBORN">A REALM REBORN</option>
@@ -118,7 +116,7 @@
                             <option value="DAWNTRAIL" selected>DAWNTRAIL</option>
                         </select>
                     </div>
-                    <div class="control-group">
+                    <div class="control-group" style="flex: 1;">
                         <label>Race</label>
                         <select id="topHeaderRight">
                             <option value="HYUR" selected>Hyur</option>
@@ -133,15 +131,15 @@
                     </div>
                 </div>
                 <div class="control-row">
-                    <div class="control-group">
+                    <div class="control-group" style="flex: 1;">
                         <label>Size</label>
                         <input type="number" id="topHeaderSize" value="12" min="10" max="14">
                     </div>
-                    <div class="control-group">
+                    <div class="control-group" style="flex: 1;">
                         <label>Color</label>
                         <input type="color" id="topHeaderColor" value="#ffffff">
                     </div>
-                    <div class="control-group">
+                    <div class="control-group" style="flex: 1;">
                         <label style="font-size: 9px; white-space: nowrap;">Color Inversion</label>
                         <select id="topHeaderInvert">
                             <option value="off" selected>OFF</option>
@@ -243,7 +241,7 @@
                     </div>
                 </div>
                 <div class="control-row">
-                    <div class="control-group" style="flex: 2;">
+                    <div class="control-group" style="flex: 1;">
                         <label>Position</label>
                         <select id="textPosition">
                             <option value="bottom" selected>BOTTOM</option>
@@ -252,12 +250,19 @@
                             <option value="right">RIGHT</option>
                         </select>
                     </div>
-                    <div class="control-group">
+                    <div class="control-group" style="flex: 1;">
                         <label>Align<span id="textAlignNote" style="color:var(--text-sub); font-size:9px;"></span></label>
                         <select id="textAlign">
                             <option value="left" selected>LEFT</option>
                             <!-- <option value="center">CENTER</option> -->
                             <option value="right">RIGHT</option>
+                        </select>
+                    </div>
+                    <div class="control-group" style="flex: 1;" id="textVAlignGroup">
+                        <label>V-Align</label>
+                        <select id="textVAlign">
+                            <option value="top" selected>TOP</option>
+                            <option value="bottom">BOTTOM</option>
                         </select>
                     </div>
                 </div>
@@ -266,18 +271,11 @@
                         <label>Size</label>
                         <input type="number" id="textSize" value="20" min="16" max="30">
                     </div>
-                    <div class="control-group" id="textVAlignGroup">
-                        <label>V-Align</label>
-                        <select id="textVAlign">
-                            <option value="top" selected>TOP</option>
-                            <option value="bottom">BOTTOM</option>
-                        </select>
-                    </div>
-                    <div class="control-group">
+                    <div class="control-group" style="flex: 1;">
                         <label>Color</label>
                         <input type="color" id="textColor" value="#ffffff">
                     </div>
-                    <div class="control-group">
+                    <div class="control-group" style="flex: 1;">
                         <label style="font-size: 9px; white-space: nowrap;">Color Inversion</label>
                         <select id="textInvert">
                             <option value="off" selected>OFF</option>
@@ -292,7 +290,7 @@
             <div class="control-section glass">
                 <h3>FOOTER:</h3>
                 <div class="control-row">
-                    <div class="control-group" style="flex: 2;">
+                    <div class="control-group" style="flex: 1;">
                         <label>Name</label>
                         <input type="text" id="extraText" value="REVEAL">
                     </div>
@@ -304,7 +302,7 @@
                             <option value="outline">OUTLINE (TRANSPARENT)</option>
                         </select>
                     </div>
-                    <div class="control-group">
+                    <div class="control-group" style="flex: 1;">
                         <label>Align</label>
                         <select id="extraAlign">
                             <option value="left">LEFT</option>
@@ -314,15 +312,15 @@
                     </div>
                 </div>
                 <div class="control-row">
-                    <div class="control-group">
+                    <div class="control-group" style="flex: 1;">
                         <label>Size</label>
                         <input type="number" id="extraSize" value="60" min="60" max="180">
                     </div>
-                    <div class="control-group">
+                    <div class="control-group" style="flex: 1;">
                         <label>Color</label>
                         <input type="color" id="extraColor" value="#ffffff">
                     </div>
-                    <div class="control-group">
+                    <div class="control-group" style="flex: 1;">
                         <label style="font-size: 9px; white-space: nowrap;">Color Inversion</label>
                         <select id="extraInvert">
                             <option value="off" selected>OFF</option>

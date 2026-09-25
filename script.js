@@ -1275,12 +1275,55 @@ function updateSliderBackground(input) {
     const val = parseFloat(input.value);
     
     const percentage = ((val - min) / (max - min)) * 100;
-    input.style.background = `linear-gradient(to right, #ffffff ${percentage}%, rgba(255, 255, 255, 0.3) ${percentage}%)`;
+    // 選択済み部分を「純白(#ffffff)」、未選択部分を「少し透明な白(rgba(255, 255, 255, 0.4))」にする
+    input.style.background = `linear-gradient(to right, #ffffff ${percentage}%, rgba(0, 0, 0, 0.6) ${percentage}%)`;
+}
+
+// タッチ位置からスライダーの値を計算して更新する関数
+function setSliderValueFromTouch(input, clientX) {
+    const rect = input.getBoundingClientRect();
+    const min = parseFloat(input.min) || 0;
+    const max = parseFloat(input.max) || 100;
+    
+    // バーの端からの位置割合（0.0 〜 1.0）を計算
+    let percentage = (clientX - rect.left) / rect.width;
+    percentage = Math.max(0, Math.min(1, percentage));
+    
+    const newVal = min + percentage * (max - min);
+    input.value = newVal;
+    
+    // inputイベントを発火させて連動させる
+    input.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
 rangeInputs.forEach(input => {
     updateSliderBackground(input);
+    
     input.addEventListener('input', (e) => {
         updateSliderBackground(e.target);
+    });
+
+    // スマホでのタッチ＆ドラッグ操作に追従させるためのイベント
+    let isDraggingRange = false;
+
+    input.addEventListener('touchstart', (e) => {
+        isDraggingRange = true;
+        if (e.touches && e.touches[0]) {
+            setSliderValueFromTouch(input, e.touches[0].clientX);
+        }
+    }, { passive: true });
+
+    input.addEventListener('touchmove', (e) => {
+        if (!isDraggingRange) return;
+        if (e.touches && e.touches[0]) {
+            setSliderValueFromTouch(input, e.touches[0].clientX);
+        }
+    }, { passive: true });
+
+    input.addEventListener('touchend', () => {
+        if (isDraggingRange) {
+            isDraggingRange = false;
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+        }
     });
 });
