@@ -1237,9 +1237,19 @@ function scheduleRender() {
     });
 }
 
+// プレビューは画面表示用なので、iPhone等の高DPR環境(3倍が多い)でもここで頭打ちにする。
+// 保存（generateExportDataUrl）はdevicePixelRatioを使わず常に1000px/1593px固定で書き出すため、
+// ここを抑えても保存画像の画質には影響しない。
+// さらに操作中（isInteracting）は一時的にもう少し下げ、指を離した瞬間に戻す。
+function getPreviewDpr() {
+    const raw = window.devicePixelRatio || 1;
+    const capped = Math.min(raw, 2);
+    return isInteracting ? Math.min(capped, 1.5) : capped;
+}
+
 function doScreenRender() {
     const { width: containerW, height: containerH } = getContainerSize();
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = getPreviewDpr();
     // canvas.width/height への代入は同じ値でもバックバッファを再確保させるため、
     // サイズが実際に変わったときだけ行う（毎フレームの無駄な再確保を避ける）
     const targetW = Math.floor(containerW * dpr);
