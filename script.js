@@ -9,7 +9,7 @@ const mainCanvas = document.getElementById('mainCanvas');
 const mainCtx = mainCanvas.getContext('2d');
 const cropBox = document.getElementById('crop-box');
 const resolutionSelect = document.getElementById('resolutionSelect');
-const resetImgBtn = document.getElementById('resetImgBtn');
+// const resetImgBtn = document.getElementById('resetImgBtn');
 const saveImgBtn = document.getElementById('saveImgBtn');
 const renderStatus = document.getElementById('renderStatus');
 
@@ -379,7 +379,7 @@ function resetImageTransform() {
     imgPosY = 0;
     scheduleRender();
 }
-resetImgBtn.addEventListener('click', resetImageTransform);
+// resetImgBtn.addEventListener('click', resetImageTransform);
 
 function changeResolution() {
     const val = resolutionSelect.value;
@@ -1056,7 +1056,12 @@ function drawTexts(ctx, W, H, box, img, offsetX, offsetY, drawW, drawH, satFilte
     }
 
     // TEXT 03
-    const extraText = extraTextInput.value;
+    let extraText = extraTextInput.value;
+    const isExtraPlaceholder = !extraText; // valueが空かどうかを判定
+    if (isExtraPlaceholder) {
+        extraText = extraTextInput.placeholder; // 空のときはplaceholderの値を代入
+    }
+
     const extraSize = parseInt(extraSizeInput.value, 10);
     const extraAlign = extraAlignInput.value;
     const extraType = extraTypeInput.value;
