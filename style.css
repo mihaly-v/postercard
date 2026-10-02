@@ -16,9 +16,10 @@
 body {
     font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background-color: var(--bg-color);
+    background: linear-gradient(to bottom, #101315, #5a6a74);
     color: var(--text-main);
     margin: 0;
-    padding: 24px;
+    padding: 24px 24px 0;
     display: flex;
     flex-direction: column;
     align-items: center;  
@@ -40,10 +41,17 @@ body {
 }
 
 .app-footer {
+    flex-direction: column;
     justify-content: center;
     font-size: 11px;
     color: var(--text-sub);
     letter-spacing: 1px;
+}
+.app-footer p {
+    margin: 4px 0 0;
+}
+.app-footer a {
+    color: #fff;
 }
 
 .app-header h1 {
@@ -51,6 +59,7 @@ body {
     font-size: 14px;
     letter-spacing: 2px;
     font-weight: 600;
+    text-align: center;
 }
 
 .app-container {
@@ -121,7 +130,7 @@ body {
     margin-bottom: 3px;
     color: var(--text-sub);
     font-family: monospace;
-    font-size: 10px;
+    font-size: 12px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -157,7 +166,7 @@ body {
     padding: 9px 14px;
     border-radius: 16px;
     cursor: pointer;
-    font-size: 11px;
+    font-size: 14px;
     width: 100%;
     font-weight: 600;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
@@ -280,7 +289,7 @@ body {
 @media screen and (max-width: 768px) {
     body {
         align-items: stretch;
-        padding: 12px; 
+        padding: 12px 12px 0; 
     }
     .app-container {
         flex-direction: column;
@@ -295,7 +304,7 @@ body {
         flex: 1 1 auto !important;
         border-radius: 16px; 
         box-sizing: border-box;
-        padding: 6px;
+        /* padding: 6px; */
     }
     .controls-panel {
         max-height: none;
@@ -318,7 +327,7 @@ body {
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    padding: 24px;
+    padding: 12px;
     box-sizing: border-box;
 }
 .modal-overlay.is-open {
@@ -403,6 +412,7 @@ body {
 
 .modal-help-text {
     font-size: 10px;
+    text-align: center;
     color: var(--text-sub);
     font-family: monospace;
     padding: 10px 18px 0;
@@ -497,4 +507,17 @@ input[type="range"]::-moz-range-thumb {
   background: transparent;
   border: none;
   box-shadow: none;
+}
+
+/* CSS */
+/* デフォルト（PCなど）では改行タグを非表示にする */
+.sp-only {
+  display: none;
+}
+
+/* スマホサイズ（例: 768px以下）のときだけ改行を表示する */
+@media screen and (max-width: 768px) {
+  .sp-only {
+    display: inline; /* または block */
+  }
 }

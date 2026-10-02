@@ -6,6 +6,7 @@ const cropBox = document.getElementById('crop-box');
 const resolutionSelect = document.getElementById('resolutionSelect');
 // const resetImgBtn = document.getElementById('resetImgBtn');
 const saveImgBtn = document.getElementById('saveImgBtn');
+const shareImgBtn = document.getElementById('shareImgBtn');
 const renderStatus = document.getElementById('renderStatus');
 
 const blurIntensityInput = document.getElementById('blurIntensity');
@@ -795,7 +796,7 @@ function render(ctx, W, H) {
         ctx.font = `14px ${FONT_STACK}`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText('// UPLOAD IMAGE TO START', W / 2, H / 2);
+        ctx.fillText('NO IMAGE', W / 2, H / 2);
     }
 }
 
@@ -1331,6 +1332,12 @@ saveImgBtn.addEventListener('click', () => {
             saveImgBtn.textContent = originalLabel;
         }
     });
+});
+
+shareImgBtn.addEventListener('click', () => {
+  const text = '#v_postercard #FF14キャラクターカード';
+  const tweetUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(text)}`;
+  window.open(tweetUrl, '_blank');
 });
 
 const saveModalOverlay = document.getElementById('saveModalOverlay');

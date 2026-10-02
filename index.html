@@ -35,8 +35,8 @@
 <body>
     <canvas id="snow-canvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0;"></canvas>
 
-    <header class="app-header">
-        <h1>FFXIV CHARACTER CARD GENERATOR -POSTER-</h1>
+    <header class="app-header glass">
+        <h1>FFXIV CHARACTER CARD GENERATOR <br class="sp-only">-POSTER-</h1>
     </header>
 
     <div class="app-container">
@@ -56,12 +56,12 @@
                         <input type="file" id="imageLoader" accept="image/*">
                     </div>
                 </div>
-                <div class="control-row">
+                <!-- <div class="control-row">
                     <div class="control-group">
                         <label>&nbsp;</label>
                         <button class="btn" id="saveImgBtn" style="background: rgba(255,255,255,0.25); font-weight: bold;">DOWNLOAD IMAGE FILE</button>
                     </div>
-                </div>
+                </div> -->
             </div>
 
             <div class="control-section glass">
@@ -433,11 +433,22 @@
                     <div class="handle handle-br" data-handle="br"></div>
                 </div>
             </div>
+            <div class="control-row">
+                <div class="control-group" style="flex: 1;">
+                    <label>&nbsp;</label>
+                    <button class="btn" id="saveImgBtn" style="background: rgba(255,255,255,0.25); font-weight: bold;">Download file</button>
+                </div>
+                <div class="control-group" style="flex: 1;">
+                    <label>&nbsp;</label>
+                    <button class="btn" id="shareImgBtn" style="background: rgba(255,255,255,0.25); font-weight: bold;">Share on Twitter</button>
+                </div>
+            </div>
         </div>
     </div>
 
     <footer class="app-footer">
-        <p>Generator System v1.0 | #v_postercard | @Notio_n </p>
+        <p>Generator System v1.0 | <a href="https://x.com/search?q=%23v_postercard&src=typed_query">#v_postercard</a> | <a href="https://x.com/Notio_n">@Notio_n</a></p>
+        <p>&copy;SQUARE ENIX</p>
     </footer>
 
     <div id="saveModalOverlay" class="modal-overlay">
@@ -451,8 +462,8 @@
             </div>
             <div class="modal-help-text">画像を右クリックor長押しでも保存できます</div>
             <div class="modal-actions">
-                <a id="modalDownloadLink" class="btn modal-download-btn" download="postercard.png">SAVE IMAGE</a>
-                <button id="modalCloseBtn2" class="btn">CLOSE</button>
+                <a id="modalDownloadLink" class="btn modal-download-btn" download="postercard.png">Save image</a>
+                <button id="modalCloseBtn2" class="btn">Close</button>
             </div>
         </div>
     </div>
