@@ -315,7 +315,7 @@ function boxBlurVertical(data, width, height, radius) {
 let processedBgCache = null;
 
 function makeProcessedBackground(img, W, H, offsetX, offsetY, drawW, drawH, saturationPct, contrastPct, blurPx) {
-    const key = [img.src, W, H, offsetX, offsetY, drawW, drawH, saturationPct, contrastPct, blurPx, isInteracting].join('|');
+    const key = [img.cacheId, W, H, offsetX, offsetY, drawW, drawH, saturationPct, contrastPct, blurPx, isInteracting].join('|');
     if (processedBgCache && processedBgCache.key === key) {
         return processedBgCache.canvas;
     }
@@ -348,42 +348,42 @@ function makeProcessedBackground(img, W, H, offsetX, offsetY, drawW, drawH, satu
     return off;
 }
 
+let imageIdSeq = 0; // 背景キャッシュのキー用の連番
+
 imageLoader.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-        const imgObj = new Image();
-        imgObj.onload = () => {
-            const canvas = document.createElement('canvas');
-            const MAX_DIM = 2000;
-            let width = imgObj.width;
-            let height = imgObj.height;
-            if (width > MAX_DIM || height > MAX_DIM) {
-                if (width > height) {
-                    height = Math.round((height * MAX_DIM) / width);
-                    width = MAX_DIM;
-                } else {
-                    width = Math.round((width * MAX_DIM) / height);
-                    height = MAX_DIM;
-                }
+    const url = URL.createObjectURL(file);
+    const imgObj = new Image();
+    imgObj.onload = () => {
+        const MAX_DIM = 2000;
+        let width = imgObj.naturalWidth || imgObj.width;
+        let height = imgObj.naturalHeight || imgObj.height;
+        if (width > MAX_DIM || height > MAX_DIM) {
+            if (width > height) {
+                height = Math.round((height * MAX_DIM) / width);
+                width = MAX_DIM;
+            } else {
+                width = Math.round((width * MAX_DIM) / height);
+                height = MAX_DIM;
             }
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(imgObj, 0, 0, width, height);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(imgObj, 0, 0, width, height);
+        URL.revokeObjectURL(url);
 
-            const resized = new Image();
-            resized.onload = () => {
-                loadedImage = resized;
-                resetImageTransform();
-                scheduleRender();
-            };
-            resized.src = canvas.toDataURL('image/jpeg', 0.92);
-        };
-        imgObj.src = event.target.result;
+        canvas.cacheId = ++imageIdSeq;
+        loadedImage = canvas; // canvas はそのまま drawImage の素材にできる
+        resetImageTransform();
+        scheduleRender();
     };
-    reader.readAsDataURL(file);
+    imgObj.onerror = () => {
+        URL.revokeObjectURL(url);
+        renderStatus.textContent = 'LOAD ERROR';
+    };
+    imgObj.src = url;
 });
 
 function resetImageTransform() {
@@ -548,6 +548,7 @@ cropBox.addEventListener('mousedown', (e) => {
     startTop = r.top;
     startWidth = r.width;
     startHeight = r.height;
+    isInteracting = true;
     e.stopPropagation();
 });
 
@@ -571,6 +572,7 @@ cropBox.addEventListener('touchstart', (e) => {
     startTop = r.top;
     startWidth = r.width;
     startHeight = r.height;
+    isInteracting = true;
     e.stopPropagation();
 }, { passive: false });
 
@@ -1292,6 +1294,7 @@ function doScreenRender() {
 }
 
 function generateExportDataUrl() {
+    isInteracting = false; // 操作中フラグが残っていても、書き出しは常に高品質
     const { width: containerW, height: containerH } = getContainerSize();
     const isLandscape = container.classList.contains('landscape');
     const targetWidth = isLandscape ? 1593 : 1000;
@@ -1416,12 +1419,14 @@ rangeInputs.forEach(input => {
         }
     }, { passive: true });
 
-    input.addEventListener('touchend', () => {
+    const endRangeTouch = () => {
         if (isDraggingRange) {
             isDraggingRange = false;
             input.dispatchEvent(new Event('change', { bubbles: true }));
         }
-    });
+    };
+    input.addEventListener('touchend', endRangeTouch);
+    input.addEventListener('touchcancel', endRangeTouch);
 });
 
 
@@ -1500,4 +1505,17 @@ const canvas = document.getElementById('snow-canvas');
   }
 
   // 60FPSでアニメーション実行
-  setInterval(drawSnow, 33);
+  // 操作中・保存モーダル表示中・タブ非表示中は止めて、ガラスのぼかし再計算を避ける
+  let lastSnowTime = 0;
+  function snowLoop(t) {
+    requestAnimationFrame(snowLoop);
+    if (document.hidden || isInteracting || saveModalOverlay.classList.contains('is-open')) return;
+    if (t - lastSnowTime < 33) return;
+    lastSnowTime = t;
+    drawSnow();
+  }
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    canvas.style.display = 'none';
+  } else {
+    requestAnimationFrame(snowLoop);
+  }

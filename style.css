@@ -75,6 +75,7 @@ body {
     flex: 1 1 600px;   
     box-sizing: border-box;
     max-height: 92vh;
+    overflow-y: auto;
 }
 
 .controls-panel::-webkit-scrollbar {
