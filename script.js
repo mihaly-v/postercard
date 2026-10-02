@@ -1514,8 +1514,4 @@ const canvas = document.getElementById('snow-canvas');
     lastSnowTime = t;
     drawSnow();
   }
-  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    canvas.style.display = 'none';
-  } else {
-    requestAnimationFrame(snowLoop);
-  }
+  requestAnimationFrame(snowLoop);
