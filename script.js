@@ -1,8 +1,3 @@
-// ============================================================
-// 設計方針：
-// プレビューとエクスポート画像を「同じ render() 関数」で描画する。
-// ============================================================
-
 const imageLoader = document.getElementById('imageLoader');
 const container = document.getElementById('viewer-container');
 const mainCanvas = document.getElementById('mainCanvas');
@@ -25,20 +20,19 @@ const insideSatVal = document.getElementById('insideSatVal');
 const borderColorInput = document.getElementById('borderColor');
 const showCrossInput = document.getElementById('showCross');
 
-// 各反転セレクトボックスの取得（チェックボックスからセレクトボックスに変更）
-const textInvertInput = document.getElementById('textInvert'); // TEXT 01 / 02 共通
+const textInvertInput = document.getElementById('textInvert');
 const titleInvertInput = textInvertInput;
 const bodyInvertInput = textInvertInput;
 const topHeaderInvertInput = document.getElementById('topHeaderInvert');
 const extraInvertInput = document.getElementById('extraInvert');
-const copyInvertInput = extraInvertInput; // TEXT 04 は TEXT 03 と反転設定を共有
+const copyInvertInput = extraInvertInput; 
 
 const titleTextInput = document.getElementById('titleText');
 
-// TEXT 01 / 02 は POSITION・SIZE・ALIGN・V-ALIGN・COLOR・反転を共通の1セットで持つ。
 const textPositionInput = document.getElementById('textPosition');
 const textSizeInput = document.getElementById('textSize');
 const textAlignInput = document.getElementById('textAlign');
+const textHAlignGroup = document.getElementById('textHAlignGroup');
 const textVAlignInput = document.getElementById('textVAlign');
 const textVAlignGroup = document.getElementById('textVAlignGroup');
 const textAlignNote = document.getElementById('textAlignNote');
@@ -57,7 +51,6 @@ const bodyAlignInput = textAlignInput;
 const bodyVAlignInput = textVAlignInput;
 const bodyColorInput = textColorInput;
 
-// TEXT 05 (TOP HEADER TRIPLE TEXT) 用の要素
 const topHeaderLeftInput = document.getElementById('topHeaderLeft');
 const topHeaderCenterInput = document.getElementById('topHeaderCenter');
 const topHeaderRightInput = document.getElementById('topHeaderRight');
@@ -70,7 +63,9 @@ const extraSizeInput = document.getElementById('extraSize');
 const extraAlignInput = document.getElementById('extraAlign');
 const extraColorInput = document.getElementById('extraColor');
 
-// TEXT 04 (COPYRIGHT) は固定値 ＆ TEXT 03 の設定を共有
+const loginTimeInput = document.getElementById('login-time');
+const logoutTimeInput = document.getElementById('logout-time');
+
 const copyTextInput = { value: "©SQUARE ENIX" };
 const copySizeInput = { value: 10 };
 const copyTypeInput = extraTypeInput;
@@ -414,16 +409,17 @@ function updateFieldStates() {
     if (textPositionInput.value === 'left') {
         textAlignInput.value = 'right';
         textAlignInput.disabled = true;
-        textAlignNote.textContent = '(FIXED: RIGHT)';
+        textHAlignGroup.style.display = 'none';
         textVAlignGroup.style.display = 'flex';
     } else if (textPositionInput.value === 'right') {
         textAlignInput.value = 'left';
         textAlignInput.disabled = true;
-        textAlignNote.textContent = '(FIXED: LEFT)';
+        textHAlignGroup.style.display = 'none';
         textVAlignGroup.style.display = 'flex';
     } else {
         textAlignInput.disabled = false;
         textAlignNote.textContent = '';
+        textHAlignGroup.style.display = 'flex';
         textVAlignGroup.style.display = 'none';
     }
 }
@@ -449,7 +445,8 @@ function onControlsChanged() {
     titleTextInput, bodyTextInput,
     textPositionInput, textSizeInput, textAlignInput, textVAlignInput, textColorInput,
     topHeaderLeftInput, topHeaderCenterInput, topHeaderRightInput, topHeaderSizeInput, topHeaderColorInput,
-    extraTextInput, extraSizeInput, extraAlignInput, extraTypeInput, extraColorInput
+    extraTextInput, extraSizeInput, extraAlignInput, extraTypeInput, extraColorInput,
+    loginTimeInput, logoutTimeInput
 ].forEach(el => {
     if (el) {
         el.addEventListener('input', onControlsChanged);
@@ -868,10 +865,7 @@ function createInverseLayer(baseCtx, box) {
             const w = baseCtx.canvas.width;
             const h = baseCtx.canvas.height;
 
-            // 文字が実際に描かれた範囲（バウンディングボックス）だけを処理する。
-            // ここだけはキャンバス全体を1回読む必要があるが、alphaだけを見る軽い1パスなので安い。
-            // 以前はここを飛ばして毎フレーム「キャンバス全体」に対して輝度計算とボックスブラーを
-            // かけていたため、反転をONにすると常に重くなっていた。
+            // 文字が実際に描かれた範囲だけを処理する。
             const fullMask = layerCtx.getImageData(0, 0, w, h);
             const fm = fullMask.data;
             let minX = w, minY = h, maxX = -1, maxY = -1;
@@ -959,6 +953,11 @@ function drawTexts(ctx, W, H, box, img, offsetX, offsetY, drawW, drawH, satFilte
     // セレクトボックスの選択値が 'on' の場合に true に設定
     const isBodyInverse = bodyInvertInput ? bodyInvertInput.value === 'on' : false;
 
+    const loginVal = loginTimeInput ? loginTimeInput.value : '6 p.m.';
+    const logoutVal = logoutTimeInput ? logoutTimeInput.value : '12 p.m.';
+    const playtimeText = `${loginVal} - ${logoutVal}`;
+    const playtimeSize = bodySize;
+
     let titleH = 0;
     let bodyH = 0;
 
@@ -1013,41 +1012,65 @@ function drawTexts(ctx, W, H, box, img, offsetX, offsetY, drawW, drawH, satFilte
         return blockH;
     }
 
+    // ログイン時間を描画するためのヘルパー関数
+    function renderPlaytime(pos, startY, h, size, align, vAlign, color, isInverse) {
+        const loginEl = document.getElementById('login-time');
+        const logoutEl = document.getElementById('logout-time');
+        if (loginEl && logoutEl) {
+            const playtimeText = `${loginEl.value} - ${logoutEl.value}`;
+            const playtimeY = startY + h + 0;
+            renderBlock(
+                playtimeText, 
+                pos, 
+                size, 
+                align, 
+                vAlign, 
+                color, 
+                false, 
+                playtimeY, 
+                isInverse
+            );
+        }
+    }
+
     if (tPos === bPos && titleText && bodyText) {
+        let bodyStartY = 0;
         if (tPos === 'bottom') {
             const startY1 = box.top + box.height + gap;
             renderBlock(titleText, tPos, titleSize, titleAlign, titleVAlign, titleColor, true, startY1, isTitleInverse);
-            const startY2 = startY1 + titleH + 0;
-            renderBlock(bodyText, bPos, bodySize, bodyAlign, bodyVAlign, bodyColor, false, startY2, isBodyInverse);
+            bodyStartY = startY1 + titleH + 10;
+            renderBlock(bodyText, bPos, bodySize, bodyAlign, bodyVAlign, bodyColor, false, bodyStartY, isBodyInverse);
         } else if (tPos === 'top') {
-            const totalH = titleH + 8 + bodyH;
+            const totalH = titleH + 20 + bodyH;
             const startY1 = box.top - gap - totalH;
             renderBlock(titleText, tPos, titleSize, titleAlign, titleVAlign, titleColor, true, startY1, isTitleInverse);
-            const startY2 = startY1 + titleH + 0;
-            renderBlock(bodyText, bPos, bodySize, bodyAlign, bodyVAlign, bodyColor, false, startY2, isBodyInverse);
+            bodyStartY = startY1 + titleH + 10;
+            renderBlock(bodyText, bPos, bodySize, bodyAlign, bodyVAlign, bodyColor, false, bodyStartY, isBodyInverse);
         } else if (tPos === 'inside-top') {
             const padding = 16;
             const startY1 = padding;
             renderBlock(titleText, tPos, titleSize, titleAlign, titleVAlign, titleColor, true, startY1, isTitleInverse);
-            const startY2 = startY1 + titleH + 0;
-            renderBlock(bodyText, bPos, bodySize, bodyAlign, bodyVAlign, bodyColor, false, startY2, isBodyInverse);
+            bodyStartY = startY1 + titleH + 10;
+            renderBlock(bodyText, bPos, bodySize, bodyAlign, bodyVAlign, bodyColor, false, bodyStartY, isBodyInverse);
         } else if (tPos === 'inside-bottom') {
             const padding = 16;
             const totalH = titleH + 8 + bodyH;
             const startY1 = H - padding - totalH;
             renderBlock(titleText, tPos, titleSize, titleAlign, titleVAlign, titleColor, true, startY1, isTitleInverse);
-            const startY2 = startY1 + titleH + 0;
-            renderBlock(bodyText, bPos, bodySize, bodyAlign, bodyVAlign, bodyColor, false, startY2, isBodyInverse);
+            bodyStartY = startY1 + titleH + 10;
+            renderBlock(bodyText, bPos, bodySize, bodyAlign, bodyVAlign, bodyColor, false, bodyStartY, isBodyInverse);
         } else if (tPos === 'left' || tPos === 'right') {
             let startY1 = box.top;
             if (titleVAlign === 'bottom') {
-                const totalH = titleH + 0 + bodyH;
+                const totalH = titleH + 20 + bodyH;
                 startY1 = box.top + box.height - totalH;
             }
             renderBlock(titleText, tPos, titleSize, titleAlign, titleVAlign, titleColor, true, startY1, isTitleInverse);
-            const startY2 = startY1 + titleH + 0;
-            renderBlock(bodyText, bPos, bodySize, bodyAlign, bodyVAlign, bodyColor, false, startY2, isBodyInverse);
+            bodyStartY = startY1 + titleH + 10;
+            renderBlock(bodyText, bPos, bodySize, bodyAlign, bodyVAlign, bodyColor, false, bodyStartY, isBodyInverse);
         }
+        // ここでもログイン時間を呼び出す
+        renderPlaytime(bPos, bodyStartY, bodyH, bodySize, bodyAlign, bodyVAlign, bodyColor, isBodyInverse);
     } else {
         if (titleText) {
             let startY = box.top + box.height + gap;
@@ -1069,8 +1092,11 @@ function drawTexts(ctx, W, H, box, img, offsetX, offsetY, drawW, drawH, satFilte
                 startY = bodyVAlign === 'bottom' ? box.top + box.height - bodyH : box.top;
             }
             renderBlock(bodyText, bPos, bodySize, bodyAlign, bodyVAlign, bodyColor, false, startY, isBodyInverse);
+            
+            // 独立している場合のログイン時間呼び出し
+            renderPlaytime(bPos, startY, bodyH, bodySize, bodyAlign, bodyVAlign, bodyColor, isBodyInverse);
         }
-    }
+    }    
 
     const padding = 24;
 
@@ -1121,8 +1147,8 @@ function drawTexts(ctx, W, H, box, img, offsetX, offsetY, drawW, drawH, satFilte
 
     if (extraText) {
         let x = W / 2;
-        if (extraAlign === 'left') x = padding;
-        if (extraAlign === 'right') x = W - padding;
+        if (extraAlign === 'left') x = padding *2;
+        if (extraAlign === 'right') x = W - padding *2;
 
         const copySizeTemp = parseInt(copySizeInput.value, 10) || 10;
         const y = H - padding - copySizeTemp - 15 - extraSize;
@@ -1168,7 +1194,6 @@ function drawTexts(ctx, W, H, box, img, offsetX, offsetY, drawW, drawH, satFilte
         }
     }
 
-    // TEXT 04 (Copyright: 固定「©SQUARE ENIX」「10px」, 設定はTEXT03と共有)
     const copyText = copyTextInput.value;
     const copySize = copySizeInput.value;
     const copyAlign = copyAlignInput.value;
@@ -1179,8 +1204,8 @@ function drawTexts(ctx, W, H, box, img, offsetX, offsetY, drawW, drawH, satFilte
 
     if (copyText) {
         let cx = W / 2;
-        if (copyAlign === 'left') cx = padding;
-        if (copyAlign === 'right') cx = W - padding;
+        if (copyAlign === 'left') cx = padding * 2;
+        if (copyAlign === 'right') cx = W - padding * 2;
 
         const y = H - padding - copySize;
 
@@ -1398,3 +1423,81 @@ rangeInputs.forEach(input => {
         }
     });
 });
+
+
+//Snow
+const canvas = document.getElementById('snow-canvas');
+  const ctx = canvas.getContext('2d');
+
+  // 画面サイズにキャンバスを合わせる
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  // 指定された数値の設定
+  const config = {
+    count: 20,       // 雪の量 (密度)
+    wind: 0.0,       // 風の強さ
+    speed: 2.0       // 落下速度
+  };
+
+  // 雪の結晶（パーティクル）の初期化
+  let snowflakes = [];
+  function initSnow() {
+    snowflakes = [];
+    for (let i = 0; i < config.count; i++) {
+      snowflakes.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: Math.random() * 2 + 1.5, // 雪の大きさ
+        d: Math.random() * config.count
+      });
+    }
+  }
+  initSnow();
+
+  // アニメーション描画ループ
+  function drawSnow() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.beginPath();
+    for (let i = 0; i < snowflakes.length; i++) {
+      let sf = snowflakes[i];
+      ctx.moveTo(sf.x, sf.y);
+      ctx.arc(sf.x, sf.y, sf.radius, 0, Math.PI * 2, true);
+    }
+    ctx.fill();
+    updateSnow();
+  }
+
+  // 雪の位置を更新
+  let angle = 0;
+  function updateSnow() {
+    angle += 0.01;
+    for (let i = 0; i < snowflakes.length; i++) {
+      let sf = snowflakes[i];
+      
+      // 落下速度と風の反映
+      sf.y += (Math.cos(angle + sf.d) + 1 + sf.radius * 0.5) * 0.5 * config.speed;
+      sf.x += Math.sin(angle) * 0.5 + config.wind;
+
+      // 画面外に出たら上部や左右からループさせる
+      if (sf.x > canvas.width + 5 || sf.x < -5 || sf.y > canvas.height) {
+        if (Math.random() > 0.5) {
+          sf.x = Math.random() * canvas.width;
+          sf.y = -10;
+        } else {
+          // 風向きに合わせて画面の端から再出現
+          sf.x = config.wind > 0 ? -5 : canvas.width + 5;
+          sf.y = Math.random() * canvas.height;
+        }
+      }
+    }
+  }
+
+  // 60FPSでアニメーション実行
+  setInterval(drawSnow, 33);

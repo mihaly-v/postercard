@@ -4,8 +4,8 @@
     --text-main: #f5f5f7;
     --text-sub: #8e8e93;
 
-    --glass-bg: rgba(255,255,255,0.14);
-    --glass-bg-strong: rgba(255,255,255,0.22);
+    --glass-bg: rgba(255,255,255,0.06);
+    --glass-bg-strong: rgba(255,255,255,0.12);
     --glass-border: rgba(255,255,255,0.35);
     --glass-shadow: 0 8px 32px rgba(0,0,0,0.35);
     --text-main: rgba(255,255,255,0.96);
@@ -20,10 +20,37 @@ body {
     margin: 0;
     padding: 24px;
     display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column;
+    align-items: center;  
     min-height: 100vh;
     box-sizing: border-box;
+    gap: 24px;    
+}
+
+.app-header, .app-footer {
+    width: 100%;
+    max-width: 1224px;
+    padding: 16px 24px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    flex-shrink: 0;
+}
+
+.app-footer {
+    justify-content: center;
+    font-size: 11px;
+    color: var(--text-sub);
+    letter-spacing: 1px;
+}
+
+.app-header h1 {
+    margin: 0;
+    font-size: 14px;
+    letter-spacing: 2px;
+    font-weight: 600;
 }
 
 .app-container {
@@ -35,24 +62,19 @@ body {
     max-width: 1224px;
     box-sizing: border-box;
     justify-content: center;
+    z-index: 10;
+    flex: 1;
 }
 
 .controls-panel {
-    /* background: rgba(25, 25, 30, 0.6); */
-    /* backdrop-filter: blur(15px); */
-    /* -webkit-backdrop-filter: blur(15px); */
-    /* border: 1px solid rgba(255, 255, 255, 0.12); */
-    /* padding: 20px; */
-    /* border-radius: 20px; */
     display: flex;
     flex-direction: column;
     gap: 14px;
     width: 100%;
-    max-width: 600px; /* PC時は最大600px */
-    flex: 1 1 600px;    /* 可変しつつ最大600pxを目指す */
+    max-width: 600px; 
+    flex: 1 1 600px;   
     box-sizing: border-box;
     max-height: 92vh;
-    overflow-y: auto;
 }
 
 .controls-panel::-webkit-scrollbar {
@@ -93,7 +115,7 @@ body {
     flex-direction: column;
     font-size: 11px;
     flex-grow: 1;
-    min-width: 0; /* フレックスボックス内で要素がはみ出るのを防ぐ */
+    min-width: 0; 
 }
 
 .control-group label {
@@ -127,21 +149,39 @@ body {
 }
 
 .btn {
-    background: rgba(255, 255, 255, 0.15);
-    color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 7px 12px;
+    position: relative;
+    background: var(--glass-bg); 
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    color: var(--text-main);
+    border: 1px solid var(--glass-border);
+    padding: 9px 14px;
     border-radius: 16px;
     cursor: pointer;
     font-size: 11px;
     width: 100%;
     font-weight: 600;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    box-sizing: border-box;
+    transition: background 0.2s ease, border-color 0.2s ease;
 }
+
+.btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.05) 100%);
+    pointer-events: none;
+    border-radius: inherit;
+}
+
 .btn:hover {
-    background: rgba(255, 255, 255, 0.25);
+    background: var(--glass-bg-strong); 
+    border-color: rgba(255, 255, 255, 0.5);
 }
+
 .btn:disabled {
-    opacity: 0.5;
+    opacity: 0.4;
     cursor: default;
 }
 
@@ -149,8 +189,8 @@ body {
     display: flex;
     flex-direction: column;
     width: 100%;
-    max-width: 600px; /* PC時は最大600px */
-    flex: 1 1 600px;    /* 可変しつつ最大600pxを目指す */
+    max-width: 600px; 
+    flex: 1 1 600px;   
     box-sizing: border-box;
 }
 
@@ -238,11 +278,10 @@ body {
     box-sizing: border-box;
 }
 
-/* スマホサイズ時（画面幅768px以下）の調整 */
 @media screen and (max-width: 768px) {
     body {
         align-items: stretch;
-        padding: 12px; /* スマホ時に余白を持たせて画面端からはみ出さないようにする */
+        padding: 12px; 
     }
     .app-container {
         flex-direction: column;
@@ -255,7 +294,7 @@ body {
         width: 100% !important;
         max-width: 100% !important;
         flex: 1 1 auto !important;
-        border-radius: 16px; /* スマホでも角丸を維持して綺麗に見せる */
+        border-radius: 16px; 
         box-sizing: border-box;
         padding: 6px;
     }
@@ -288,16 +327,31 @@ body {
 }
 
 .modal-box {
-    background: #0f0f13;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 20px;
+    position: relative;
+    background: var(--glass-bg);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
     width: 100%;
     max-width: 480px;
     max-height: 92vh;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 40px 80px rgba(0,0,0,0.9);
+    box-shadow: 
+        var(--glass-shadow),
+        inset 0 1px 0 rgba(255,255,255,0.5),
+        inset 0 0 24px rgba(255,255,255,0.04);
     overflow: hidden;
+}
+
+.modal-box::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 30%, rgba(255,255,255,0) 70%, rgba(255,255,255,0.12) 100%);
+    pointer-events: none;
+    border-radius: inherit;
 }
 
 .modal-header {
@@ -333,7 +387,7 @@ body {
     align-items: center;
     justify-content: center;
     background: #050507;
-    padding: 12px;
+    /* padding: 12px; */
     min-height: 0;
 }
 
@@ -343,7 +397,7 @@ body {
     width: auto;
     height: auto;
     display: block;
-    border-radius: 8px;
+    /* border-radius: 8px; */
     -webkit-touch-callout: default;
     user-select: none;
 }
@@ -386,20 +440,17 @@ body {
     inset 0 0 24px rgba(255,255,255,0.04);
     /* overflow: hidden; */
 }
-/* 上端に走るスペキュラハイライト（ガラスの反射光） */
 .glass::before {
     content: "";
     position: absolute;
     inset: 0;
     background: linear-gradient(135deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 30%, rgba(255,255,255,0) 70%, rgba(255,255,255,0.12) 100%);
     pointer-events: none;
-    border-radius: inherit; /* 角丸からはみ出さないようにする場合 */
+    border-radius: inherit;
 }
 
 
 /* スライダー調整 */
-
-/* スライダー全体のベース設定 */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
@@ -407,7 +458,6 @@ input[type="range"] {
   background: transparent;
   outline: none;
   cursor: pointer;
-  /* 上下にパディングを持たせてヒットエリアを広げる（つまみがなくても押しやすくする） */
   padding: 12px 0;
   touch-action: manipulation;
 }
@@ -417,12 +467,11 @@ input[type="range"]::-webkit-slider-runnable-track {
   width: 100%;
   height: 6px;
   border-radius: 3px;
-  /* ここでバーのベースとなる白を指定（必要に応じて不透明度を変更してください） */
   background: rgba(255, 255, 255, 0);
   border: none;
 }
 
-/* Chrome, Safari, Edge 向けのつまみを完全に消す設定 */
+/* Chrome, Safari, Edge 向けのつまみを完全に消す */
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;

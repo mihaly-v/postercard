@@ -1,20 +1,34 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-SCN1B9FBVX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-SCN1B9FBVX');
+    </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Liquid Glass UI Generator (Canvas Single Source)</title>
+    <title>FFXIV CHARACTER CARD GENERATOR -POSTER-</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <canvas id="snow-canvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0;"></canvas>
+
+    <header class="app-header">
+        <h1>FFXIV CHARACTER CARD GENERATOR -POSTER-</h1>
+    </header>
 
     <div class="app-container">
-        <!-- コントロールパネル -->
         <div class="controls-panel">
             <div class="control-section glass">
                 <h3>FILE:</h3>
                 <div class="control-row">
-                    <div class="control-group"  style="flex: 1;">
+                    <div class="control-group"  style="flex: 1; display: none;">
                         <label>Card Type</label>
                         <select id="resolutionSelect">
                             <option value="1000x1593" selected>PORTRAIT (1000×1593)</option>
@@ -46,7 +60,7 @@
                         <button class="btn" id="resetImgBtn">RESET</button>
                     </div> -->
                 </div>
-                <div class="control-row">
+                <div class="control-row" style="display: none;">
                     <div class="control-group" style="flex: 1;">
                         <label>Texture</label>
                         <select id="textureType">
@@ -87,7 +101,6 @@
             </div>
 
 
-            <!-- TEXT 05 (TOP HEADER TRIPLE TEXT) -->
             <div class="control-section glass">
                 <h3>Top:</h3>
                 <div class="control-row">
@@ -131,7 +144,7 @@
                     </div>
                 </div>
                 <div class="control-row">
-                    <div class="control-group" style="flex: 1;">
+                    <div class="control-group" style="flex: 1; display: none;">
                         <label>Size</label>
                         <input type="number" id="topHeaderSize" value="12" min="10" max="14">
                     </div>
@@ -149,7 +162,6 @@
                 </div>
             </div>
 
-            <!-- TEXT 01 (TITLE - FF14 JOB) + TEXT 02 (BODY - WORLD/DC) 共通パネル -->
             <div class="control-section glass">
                 <h3>MAIN:</h3>
                 <div class="control-row">
@@ -241,6 +253,68 @@
                     </div>
                 </div>
                 <div class="control-row">
+                <div class="control-group" style="flex: 1;">
+                    <label for="login-time">Login Time:</label>
+                    <select id="login-time">
+                        <option value="12 a.m.">12 a.m.</option>
+                        <option value="1 a.m.">1 a.m.</option>
+                        <option value="2 a.m.">2 a.m.</option>
+                        <option value="3 a.m.">3 a.m.</option>
+                        <option value="4 a.m.">4 a.m.</option>
+                        <option value="5 a.m.">5 a.m.</option>
+                        <option value="6 a.m.">6 a.m.</option>
+                        <option value="7 a.m.">7 a.m.</option>
+                        <option value="8 a.m.">8 a.m.</option>
+                        <option value="9 a.m.">9 a.m.</option>
+                        <option value="10 a.m.">10 a.m.</option>
+                        <option value="11 a.m.">11 a.m.</option>
+                        <option value="12 p.m.">12 p.m.</option>
+                        <option value="1 p.m.">1 p.m.</option>
+                        <option value="2 p.m.">2 p.m.</option>
+                        <option value="3 p.m.">3 p.m.</option>
+                        <option value="4 p.m.">4 p.m.</option>
+                        <option value="5 p.m.">5 p.m.</option>
+                        <option value="6 p.m." selected>6 p.m.</option>
+                        <option value="7 p.m.">7 p.m.</option>
+                        <option value="8 p.m.">8 p.m.</option>
+                        <option value="9 p.m.">9 p.m.</option>
+                        <option value="10 p.m.">10 p.m.</option>
+                        <option value="11 p.m.">11 p.m.</option>
+                    </select>
+                </div>
+
+                <div class="control-group" style="flex: 1;">
+                    <label for="logout-time">Logout Time:</label>
+                    <select id="logout-time">
+                        <option value="12 a.m.">12 a.m.</option>
+                        <option value="1 a.m.">1 a.m.</option>
+                        <option value="2 a.m.">2 a.m.</option>
+                        <option value="3 a.m.">3 a.m.</option>
+                        <option value="4 a.m.">4 a.m.</option>
+                        <option value="5 a.m.">5 a.m.</option>
+                        <option value="6 a.m.">6 a.m.</option>
+                        <option value="7 a.m.">7 a.m.</option>
+                        <option value="8 a.m.">8 a.m.</option>
+                        <option value="9 a.m.">9 a.m.</option>
+                        <option value="10 a.m.">10 a.m.</option>
+                        <option value="11 a.m.">11 a.m.</option>
+                        <option value="12 p.m.">12 p.m.</option>
+                        <option value="1 p.m.">1 p.m.</option>
+                        <option value="2 p.m.">2 p.m.</option>
+                        <option value="3 p.m.">3 p.m.</option>
+                        <option value="4 p.m.">4 p.m.</option>
+                        <option value="5 p.m.">5 p.m.</option>
+                        <option value="6 p.m.">6 p.m.</option>
+                        <option value="7 p.m.">7 p.m.</option>
+                        <option value="8 p.m.">8 p.m.</option>
+                        <option value="9 p.m.">9 p.m.</option>
+                        <option value="10 p.m.">10 p.m.</option>
+                        <option value="11 p.m.">11 p.m.</option>
+                        <option value="12 p.m." selected>12 p.m.</option>
+                    </select>
+                </div>
+                </div>                
+                <div class="control-row">
                     <div class="control-group" style="flex: 1;">
                         <label>Position</label>
                         <select id="textPosition">
@@ -250,7 +324,7 @@
                             <option value="right">RIGHT</option>
                         </select>
                     </div>
-                    <div class="control-group" style="flex: 1;">
+                    <div class="control-group" style="flex: 1;" id="textHAlignGroup">
                         <label>Align<span id="textAlignNote" style="color:var(--text-sub); font-size:9px;"></span></label>
                         <select id="textAlign">
                             <option value="left" selected>LEFT</option>
@@ -259,7 +333,7 @@
                         </select>
                     </div>
                     <div class="control-group" style="flex: 1;" id="textVAlignGroup">
-                        <label>V-Align</label>
+                        <label>Align</label>
                         <select id="textVAlign">
                             <option value="top" selected>TOP</option>
                             <option value="bottom">BOTTOM</option>
@@ -267,7 +341,7 @@
                     </div>
                 </div>
                 <div class="control-row">
-                    <div class="control-group" style="flex: 1;">
+                    <div class="control-group" style="flex: 1; display: none;">
                         <label>Size</label>
                         <input type="number" id="textSize" value="20" min="16" max="30">
                     </div>
@@ -285,8 +359,6 @@
                 </div>
             </div>
 
-
-            <!-- TEXT 03 -->
             <div class="control-section glass">
                 <h3>FOOTER:</h3>
                 <div class="control-row">
@@ -294,7 +366,7 @@
                         <label>Name</label>
                         <input type="text" id="extraText" value="" placeholder="NAME">
                     </div>
-                    <div class="control-group" style="flex: 1;">
+                    <div class="control-group" style="flex: 1; display: none;">
                         <label>Type</label>
                         <select id="extraType">
                             <option value="reveal">IMAGE REVEAL</option>
@@ -302,7 +374,7 @@
                             <option value="outline">OUTLINE (TRANSPARENT)</option>
                         </select>
                     </div>
-                    <div class="control-group" style="flex: 1;">
+                    <div class="control-group" style="flex: 1; ">
                         <label>Align</label>
                         <select id="extraAlign">
                             <option value="left">LEFT</option>
@@ -312,7 +384,7 @@
                     </div>
                 </div>
                 <div class="control-row">
-                    <div class="control-group" style="flex: 1;">
+                    <div class="control-group" style="flex: 1; display: none;">
                         <label>Size</label>
                         <input type="number" id="extraSize" value="60" min="60" max="180">
                     </div>
@@ -332,9 +404,8 @@
 
         </div>
 
-        <!-- プレビューエリア -->
         <div class="preview-area">
-            <div class="preview-header" id="previewHeader">
+            <div class="preview-header" id="previewHeader" style="display: none;">
                 <span>PREVIEW:</span>
                 <span id="renderStatus">READY</span>
             </div>
@@ -347,11 +418,13 @@
                     <div class="handle handle-br" data-handle="br"></div>
                 </div>
             </div>
-            <!-- <div class="help-text" id="helpText">TIP: プレビューはCanvas描画そのもので、ダウンロード画像と完全に同一です。</div> -->
         </div>
     </div>
 
-    <!-- 保存確認モーダル -->
+    <footer class="app-footer">
+        <p>Generator System v1.0 | #v_postercard | @Notio_n </p>
+    </footer>
+
     <div id="saveModalOverlay" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-header">
