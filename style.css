@@ -219,7 +219,7 @@ body {
     position: relative;
     width: 100% !important;
     max-width: 100% !important;
-    aspect-ratio: 1000 / 1593;
+    aspect-ratio: 1032 / 1456;
     height: auto !important;
     overflow: hidden;
     border-radius: 24px;
@@ -233,7 +233,7 @@ body {
 }
 
 #viewer-container.landscape {
-    aspect-ratio: 1593 / 1000;
+    aspect-ratio: 1456 / 1032;
 }
 
 #viewer-container:active {
@@ -326,7 +326,7 @@ body {
     display: none;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 1032;
     padding: 12px;
     box-sizing: border-box;
 }

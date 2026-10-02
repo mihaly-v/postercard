@@ -89,7 +89,7 @@ const BASE_WIDTH = 600;
 function getContainerSize() {
     const width = BASE_WIDTH;
     const isLandscape = container.classList.contains('landscape');
-    const height = isLandscape ? width * (1000 / 1593) : width * (1593 / 1000);
+    const height = isLandscape ? width * (1032 / 1456) : width * (1456 / 1032);
     return { width, height };
 }
 
@@ -130,7 +130,7 @@ buildGrainTile();
 
 let frostedTileCanvas = null;
 function buildFrostedTile() {
-    const size = 1000;
+    const size = 1032;
     const c = document.createElement('canvas');
     c.width = size;
     c.height = size;
@@ -397,9 +397,9 @@ function resetImageTransform() {
 
 function changeResolution() {
     const val = resolutionSelect.value;
-    if (val === '1000x1593') {
+    if (val === '1032x1456') {
         container.classList.remove('landscape');
-    } else if (val === '1593x1000') {
+    } else if (val === '1456x1032') {
         container.classList.add('landscape');
     }
     resetImageTransform();
@@ -1266,7 +1266,7 @@ function scheduleRender() {
 }
 
 // プレビューは画面表示用なので、iPhone等の高DPR環境(3倍が多い)でもここで頭打ちにする。
-// 保存（generateExportDataUrl）はdevicePixelRatioを使わず常に1000px/1593px固定で書き出すため、
+// 保存（generateExportDataUrl）はdevicePixelRatioを使わず常に1032px/1456px固定で書き出すため、
 // ここを抑えても保存画像の画質には影響しない。
 // さらに操作中（isInteracting）は一時的にもう少し下げ、指を離した瞬間に戻す。
 function getPreviewDpr() {
@@ -1298,7 +1298,7 @@ function generateExportDataUrl() {
     isInteracting = false; // 操作中フラグが残っていても、書き出しは常に高品質
     const { width: containerW, height: containerH } = getContainerSize();
     const isLandscape = container.classList.contains('landscape');
-    const targetWidth = isLandscape ? 1593 : 1000;
+    const targetWidth = isLandscape ? 1456 : 1032;
     const exportScale = targetWidth / containerW;
     const canvas = document.createElement('canvas');
     canvas.width = Math.round(containerW * exportScale);
