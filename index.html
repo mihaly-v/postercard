@@ -37,6 +37,14 @@
 
     <header class="app-header glass">
         <h1>FFXIV CHARACTER CARD <br class="sp-only">GENERATOR -POSTER-</h1>
+        <div class="lang-switcher">
+            <button id="btnLangJP" class="lang-btn active">
+                <span>JP</span>
+            </button>
+            <button id="btnLangEN" class="lang-btn">
+                <span>EN</span>
+            </button>
+        </div>
     </header>
 
     <div class="app-container">
@@ -52,7 +60,7 @@
                         </select>
                     </div>
                     <div class="control-group"  style="flex: 1;">
-                        <label>Upload Image</label>
+                        <label id="uploadImage">画像アップロード</label>
                         <input type="file" id="imageLoader" accept="image/*">
                     </div>
                 </div>
@@ -68,7 +76,7 @@
                 <h3>STYLE:</h3>
                 <div class="control-row">
                     <div class="control-group" style="flex: 1;">
-                        <label>Blur Intensity: <span id="blurVal">14</span>px</label>
+                        <label><span id="blurIntensityText">ぼかし強度:</span> <span id="blurVal">14</span>px</label>
                         <input type="range" id="blurIntensity" min="0" max="35" value="14">
                     </div>
                     <!-- <div class="control-group" style="justify-content: flex-end; max-width: 90px;">
@@ -93,21 +101,21 @@
                 
                 <div class="control-row">
                     <div class="control-group" style="flex: 1;">
-                        <label>Inside Saturation: <span id="insideSatVal">100</span>%</label>
+                        <label><span id="insideSaturationText">内側彩度:</span> <span id="insideSatVal">100</span>%</label>
                         <input type="range" id="insideSaturation" min="0" max="100" value="100">
                     </div>
                     <div class="control-group" style="flex: 1;">
-                        <label>Outside Saturation: <span id="satVal">100</span>%</label>
+                        <label><span id="outsideSaturationText">外側彩度:</span> <span id="satVal">100</span>%</label>
                         <input type="range" id="bgSaturation" min="0" max="100" value="100">
                     </div>
                 </div>
                 <div class="control-row">
                     <div class="control-group" style="flex: 1;">
-                        <label>Frame Color</label>
+                        <label id="frameColor">フレームカラー</label>
                         <input type="color" id="borderColor" value="#ffffff">
                     </div>
                     <div class="control-group" style="flex: 1;">
-                        <label>Crosshair</label>
+                        <label id="crosshair">クロスヘア</label>
                         <select id="showCross">
                             <option value="none">OFF</option>
                             <option value="show">ON</option>
@@ -121,7 +129,7 @@
                 <h3>Top:</h3>
                 <div class="control-row">
                     <div class="control-group" style="flex: 1;">
-                        <label>Playstyle</label>
+                        <label id="playstyle">プレイスタイル</label>
                         <select id="topHeaderLeft">
                             <option value="STORY" selected>STORY</option>
                             <option value="CHAT/RP">CHAT/RP</option>
@@ -135,7 +143,7 @@
                         </select>
                     </div>
                     <div class="control-group" style="flex: 1;">
-                        <label>MSQ</label>
+                        <label id="msq">メインストーリー</label>
                         <select id="topHeaderCenter">
                             <option value="A REALM REBORN">A REALM REBORN</option>
                             <option value="HEAVENSWARD">HEAVENSWARD</option>
@@ -146,7 +154,7 @@
                         </select>
                     </div>
                     <div class="control-group" style="flex: 1;">
-                        <label>Race</label>
+                        <label id="race">種族</label>
                         <select id="topHeaderRight">
                             <option value="HYUR" selected>Hyur</option>
                             <option value="ELEZEN">Elezen</option>
@@ -165,11 +173,11 @@
                         <input type="number" id="topHeaderSize" value="12" min="10" max="14">
                     </div>
                     <div class="control-group" style="flex: 1;">
-                        <label>Color</label>
+                        <label id="colorA">カラー</label>
                         <input type="color" id="topHeaderColor" value="#ffffff">
                     </div>
                     <div class="control-group" style="flex: 1;">
-                        <label style="font-size: 9px; white-space: nowrap;">Color Inversion</label>
+                        <label style="font-size: 9px; white-space: nowrap;" id="colorInversionA">色反転</label>
                         <select id="topHeaderInvert">
                             <option value="off" selected>OFF</option>
                             <option value="on">ON</option>
@@ -182,7 +190,7 @@
                 <h3>MAIN:</h3>
                 <div class="control-row">
                     <div class="control-group" style="flex: 1;">
-                        <label>Job</label>
+                        <label id="job">ジョブ</label>
                         <select id="titleText">
                             <optgroup label="-- TANK --">
                                 <option value="PALADIN" selected>Paladin</option>
@@ -218,7 +226,7 @@
                         </select>
                     </div>
                     <div class="control-group" style="flex: 1;">
-                        <label>World</label>
+                        <label id="world">ワールド</label>
                         <select id="bodyText">
                             <option value="Secret">Secret</option>
                             <optgroup label="-- Elemental (JP) --">
@@ -265,12 +273,20 @@
                                 <option value="Meteor / Yojimbo">Yojimbo</option>
                                 <option value="Meteor / Zeromus">Zeromus</option>
                             </optgroup>
+                            <optgroup label="-- KOREA (KR) --">
+                                <option value="Korea / Secret">Secret</option>
+                                <option value="Korea / Carbuncle">Carbuncle</option>
+                                <option value="Korea / Chocobo">Chocobo</option>
+                                <option value="Korea / Fenrir">Fenrir</option>
+                                <option value="Korea / Moogle">Moogle</option>
+                                <option value="Korea / Tonberry">Tonberry</option>
+                            </optgroup>
                         </select>
                     </div>
                 </div>
                 <div class="control-row">
                 <div class="control-group" style="flex: 1;">
-                    <label for="login-time">Login Time:</label>
+                    <label for="login-time" id="loginTime">ログイン時間:</label>
                     <select id="login-time">
                         <option value="12 a.m.">12 a.m.</option>
                         <option value="1 a.m.">1 a.m.</option>
@@ -300,7 +316,7 @@
                 </div>
 
                 <div class="control-group" style="flex: 1;">
-                    <label for="logout-time">Logout Time:</label>
+                    <label for="logout-time" id="logoutTime">ログアウト時間:</label>
                     <select id="logout-time">
                         <option value="12 a.m.">12 a.m.</option>
                         <option value="1 a.m.">1 a.m.</option>
@@ -331,7 +347,7 @@
                 </div>                
                 <div class="control-row">
                     <div class="control-group" style="flex: 1;">
-                        <label>Position</label>
+                        <label id="position">位置</label>
                         <select id="textPosition">
                             <option value="bottom" selected>BOTTOM</option>
                             <option value="top">TOP</option>
@@ -340,7 +356,7 @@
                         </select>
                     </div>
                     <div class="control-group" style="flex: 1;" id="textHAlignGroup">
-                        <label>Align<span id="textAlignNote" style="color:var(--text-sub); font-size:9px;"></span></label>
+                        <label id="alignA">配置<span id="textAlignNote" style="color:var(--text-sub); font-size:9px;"></span></label>
                         <select id="textAlign">
                             <option value="left" selected>LEFT</option>
                             <!-- <option value="center">CENTER</option> -->
@@ -348,7 +364,7 @@
                         </select>
                     </div>
                     <div class="control-group" style="flex: 1;" id="textVAlignGroup">
-                        <label>Align</label>
+                        <label id="alignB">配置</label>
                         <select id="textVAlign">
                             <option value="top" selected>TOP</option>
                             <option value="bottom">BOTTOM</option>
@@ -361,11 +377,11 @@
                         <input type="number" id="textSize" value="20" min="16" max="30">
                     </div>
                     <div class="control-group" style="flex: 1;">
-                        <label>Color</label>
+                        <label id="colorB">色</label>
                         <input type="color" id="textColor" value="#ffffff">
                     </div>
                     <div class="control-group" style="flex: 1;">
-                        <label style="font-size: 9px; white-space: nowrap;">Color Inversion</label>
+                        <label style="font-size: 9px; white-space: nowrap;" id="colorInversionB">色反転</label>
                         <select id="textInvert">
                             <option value="off" selected>OFF</option>
                             <option value="on">ON</option>
@@ -378,7 +394,7 @@
                 <h3>FOOTER:</h3>
                 <div class="control-row">
                     <div class="control-group" style="flex: 1;">
-                        <label>Name</label>
+                        <label id="name">名前</label>
                         <input type="text" id="extraText" value="" placeholder="NAME">
                     </div>
                     <div class="control-group" style="flex: 1; display: none;">
@@ -390,7 +406,7 @@
                         </select>
                     </div>
                     <div class="control-group" style="flex: 1; ">
-                        <label>Align</label>
+                        <label id="alignC">配置</label>
                         <select id="extraAlign">
                             <option value="left">LEFT</option>
                             <option value="center" selected>CENTER</option>
@@ -404,11 +420,11 @@
                         <input type="number" id="extraSize" value="60" min="60" max="180">
                     </div>
                     <div class="control-group" style="flex: 1;">
-                        <label>Color</label>
+                        <label id="colorC">色</label>
                         <input type="color" id="extraColor" value="#ffffff">
                     </div>
                     <div class="control-group" style="flex: 1;">
-                        <label style="font-size: 9px; white-space: nowrap;">Color Inversion</label>
+                        <label style="font-size: 9px; white-space: nowrap;" id="colorInversionC">色反転</label>
                         <select id="extraInvert">
                             <option value="off" selected>OFF</option>
                             <option value="on">ON</option>
@@ -447,8 +463,8 @@
     </div>
 
     <footer class="app-footer">
-        <p>Generator System v1.0 | <a href="https://x.com/search?q=%23v_postercard&src=typed_query">#v_postercard</a> | <a href="https://x.com/Notio_n">@Notio_n</a></p>
-        <p>Cyber風のキャラカはこちら: <a href="https://mihaly-v.github.io/cybercard/">#v_cybercard</a></p>
+        <p>Generator System v1.0 | <a href="https://x.com/search?q=%23v_postercard&src=typed_query" target="_blank">#v_postercard</a> | <a href="https://x.com/Notio_n" target="_blank">@Notio_n</a></p>
+        <p>Cyber風のキャラカはこちら: <a href="https://mihaly-v.github.io/cybercard/" target="_blank">#v_cybercard</a></p>
         <p>&copy;SQUARE ENIX</p>
     </footer>
 

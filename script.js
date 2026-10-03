@@ -1522,3 +1522,92 @@ const canvas = document.getElementById('snow-canvas');
     drawSnow();
   }
   requestAnimationFrame(snowLoop);
+
+
+//   
+// 翻訳辞書データ
+const translations = {
+    ja: {
+        uploadImage: "画像アップロード",
+        blurIntensity: "ぼかし強度:",
+        insideSaturation: "内側彩度:",
+        outsideSaturation: "外側彩度:",
+        frameColor: "フレームカラー",
+        crosshair: "クロスヘア",
+        playstyle: "プレイスタイル",
+        msq: "メインストーリー",
+        race: "種族",
+        job: "ジョブ",
+        world: "ワールド",
+        loginTime: "ログイン時間:",
+        logoutTime: "ログアウト時間:",
+        position: "位置",
+        align: "配置",
+        color: "カラー",
+        colorInversion: "色反転",
+        name: "名前",
+    },
+    en: {
+        uploadImage: "Upload Image",
+        blurIntensity: "Blur Intensity:",
+        insideSaturation: "Inside Saturation:",
+        outsideSaturation: "Outside Saturation:",
+        frameColor: "Frame Color",
+        crosshair: "Crosshair",
+        playstyle: "Playstyle",
+        msq: "MSQ",
+        race: "Race",
+        job: "Job",
+        world: "World",
+        loginTime: "Login Time:",
+        logoutTime: "Logout Time:",
+        position: "Position",
+        align: "Align",
+        color: "Color",
+        colorInversion: "Color Inversion",
+        name: "Name",
+    }
+};
+
+let currentLang = 'ja';
+
+function switchLanguage(lang) {
+    currentLang = lang;
+    const t = translations[lang];
+
+    // ボタンのactiveクラスを切り替え
+    document.getElementById('btnLangJP').classList.toggle('active', lang === 'ja');
+    document.getElementById('btnLangEN').classList.toggle('active', lang === 'en');
+
+    // 各UI要素のテキストを書き換え
+
+    document.getElementById('uploadImage').textContent = t.uploadImage;
+    document.getElementById('blurIntensityText').textContent = t.blurIntensity;
+    document.getElementById('insideSaturationText').textContent = t.insideSaturation;
+    document.getElementById('outsideSaturationText').textContent = t.outsideSaturation;
+    document.getElementById('frameColor').textContent = t.frameColor;
+    document.getElementById('crosshair').textContent = t.crosshair;
+    document.getElementById('playstyle').textContent = t.playstyle;
+    document.getElementById('msq').textContent = t.msq;
+    document.getElementById('race').textContent = t.race;
+    document.getElementById('job').textContent = t.job;
+    document.getElementById('world').textContent = t.world;
+    document.getElementById('loginTime').textContent = t.loginTime;
+    document.getElementById('logoutTime').textContent = t.logoutTime;
+    document.getElementById('position').textContent = t.position;
+    document.getElementById('alignA').textContent = t.align;
+    document.getElementById('alignB').textContent = t.align;
+    document.getElementById('alignC').textContent = t.align;
+    document.getElementById('colorA').textContent = t.color;
+    document.getElementById('colorB').textContent = t.color;
+    document.getElementById('colorC').textContent = t.color;
+    document.getElementById('colorInversionA').textContent = t.colorInversion;
+    document.getElementById('colorInversionB').textContent = t.colorInversion;
+    document.getElementById('colorInversionC').textContent = t.colorInversion;
+    document.getElementById('name').textContent = t.name;
+    
+}
+
+// ボタンにイベントリスナーを設定
+document.getElementById('btnLangJP').addEventListener('click', () => switchLanguage('ja'));
+document.getElementById('btnLangEN').addEventListener('click', () => switchLanguage('en'));
