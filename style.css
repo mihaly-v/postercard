@@ -13,7 +13,7 @@
     --accent: #7C5CFF;
 }
 html {
-    background: linear-gradient(to bottom, #101315, #5a6a74) fixed;
+    background-color: linear-gradient(to bottom, #101315, #5a6a74) fixed;
 }
 body {
     font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
