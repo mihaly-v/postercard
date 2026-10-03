@@ -13,6 +13,7 @@
     --accent: #7C5CFF;
 }
 html {
+    background: #101315;
     background-color: linear-gradient(to bottom, #101315, #5a6a74) fixed;
 }
 body {
